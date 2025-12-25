@@ -1,0 +1,34 @@
+/* Hide mobile bar on desktop */
+.mobile-topbar {
+  display: none;
+}
+
+/* Desktop sidebar visible */
+.desktop-sidebar {
+  display: block;
+}
+
+/* Mobile styles */
+@media (max-width: 992px) {
+  .desktop-sidebar {
+    display: none;
+  }
+
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    height: 70px;
+    background: #fff;
+    border-bottom: 1px solid #f0f0f0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .mobile-logo {
+    font-weight: 700;
+    font-size: 16px;
+  }
+}
