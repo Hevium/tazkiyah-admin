@@ -18,7 +18,7 @@ export default function AdminLayout() {
 
   const menuItems = [
     { key: "/", icon: <DashboardOutlined />, label: "Dashboard" },
-    { key: "/student", icon: <UserOutlined />, label: "Student" },
+    { key: "/students", icon: <UserOutlined />, label: "Student" },
     { key: "/exam", icon: <FileTextOutlined />, label: "Exam" },
     { key: "/book", icon: <BookOutlined />, label: "Book" },
     { key: "/blog", icon: <FileTextOutlined />, label: "Blog" },
@@ -118,7 +118,6 @@ const logoStyle = {
 };
 
 const contentStyle = {
-  padding: 24,
   background: "#f5f7fa",
   minHeight: "100vh",
 };
