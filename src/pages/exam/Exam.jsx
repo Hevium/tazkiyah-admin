@@ -12,7 +12,8 @@ import {
   Grid,
 } from "antd";
 import { EditOutlined, ReloadOutlined } from "@ant-design/icons";
-import { apiGet } from "../api/apiInstances";
+import { apiGet } from "../../api/apiInstances";
+import { useNavigate } from "react-router-dom";
 // import EditExamModal from "../../components/EditExamModal"; // Optional (যদি থাকে)
 
 const { Search } = Input;
@@ -20,6 +21,8 @@ const { Title } = Typography;
 const { useBreakpoint } = Grid;
 
 const Exam = () => {
+  const navigate = useNavigate();
+
   // ================== Responsive ==================
   const screens = useBreakpoint();
   const isMobile = !screens.md;
@@ -40,8 +43,8 @@ const Exam = () => {
   const [accessType, setAccessType] = useState("all");
 
   // Optional modal states
-  const [editOpen, setEditOpen] = useState(false);
-  const [selectedExam, setSelectedExam] = useState(null);
+  const [_editOpen, setEditOpen] = useState(false);
+  const [_selectedExam, setSelectedExam] = useState(null);
 
   // ================== Helpers ==================
   const renderStatus = (s) => {
@@ -54,7 +57,8 @@ const Exam = () => {
 
   const renderAccess = (record) => {
     const a = String(record?.access_type || "").toLowerCase();
-    if (a === "paid") return <Tag color="geekblue">Paid ৳{record?.price ?? 0}</Tag>;
+    if (a === "paid")
+      return <Tag color="geekblue">Paid ৳{record?.price ?? 0}</Tag>;
     if (a === "free") return <Tag color="purple">Free</Tag>;
     return <Tag>—</Tag>;
   };
@@ -85,12 +89,9 @@ const Exam = () => {
       const pg = res?.data?.pagination || {};
 
       // ✅ Support multiple possible pagination formats (backend may vary)
-      const current =
-        pg.current_page ?? pg.page ?? pg.current ?? page;
-      const pageSize =
-        pg.per_page ?? pg.limit ?? pg.pageSize ?? limit;
-      const total =
-        pg.total_records ?? pg.total ?? pg.totalRecords ?? 0;
+      const current = pg.current_page ?? pg.page ?? pg.current ?? page;
+      const pageSize = pg.per_page ?? pg.limit ?? pg.pageSize ?? limit;
+      const total = pg.total_records ?? pg.total ?? pg.totalRecords ?? 0;
 
       setExams(data);
 
@@ -171,20 +172,47 @@ const Exam = () => {
   return (
     <div style={{ padding: 20 }}>
       {/* Page Title */}
-      <Space style={{ width: "100%", justifyContent: "space-between" }} align="start">
-        <div>
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: isMobile ? "stretch" : "flex-start",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 12,
+        }}
+      >
+        <div style={{ flex: "1 1 auto", minWidth: 220 }}>
           <Title level={4} style={{ marginBottom: 0 }}>
             Exam Management
           </Title>
         </div>
 
-        <Button
-          icon={<ReloadOutlined />}
-          onClick={() => fetchExams(pagination.current, pagination.pageSize, search, status, accessType)}
+        <Space
+          size="middle"
+          wrap
+          style={{ flex: "0 0 auto", justifyContent: "flex-end" }}
         >
-          Refresh
-        </Button>
-      </Space>
+          <Button type="primary" onClick={() => navigate("/createExam")}>
+            Create Exam
+          </Button>
+
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={() =>
+              fetchExams(
+                pagination.current,
+                pagination.pageSize,
+                search,
+                status,
+                accessType
+              )
+            }
+          >
+            Refresh
+          </Button>
+        </Space>
+      </div>
 
       {/* Search & Filter */}
       <Space
@@ -266,7 +294,8 @@ const Exam = () => {
                         <strong>Questions:</strong> {r.total_question ?? "—"}
                       </div>
                       <div>
-                        <strong>Duration:</strong> {r.duration_minutes ? `${r.duration_minutes} min` : "—"}
+                        <strong>Duration:</strong>{" "}
+                        {r.duration_minutes ? `${r.duration_minutes} min` : "—"}
                       </div>
                       <div>
                         <strong>Status:</strong> {renderStatus(r.exam_status)}
