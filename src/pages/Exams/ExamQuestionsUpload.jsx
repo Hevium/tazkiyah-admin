@@ -10,7 +10,9 @@ import {
   Segmented,
   message,
 } from "antd";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { apiGet, apiPut } from "../../api/apiInstances";
 
 const { Title, Text } = Typography;
 
@@ -19,18 +21,38 @@ export default function ExamQuestionsUpload() {
   const navigate = useNavigate();
 
   const [form] = Form.useForm();
+  const [submitting, setSubmitting] = useState(false);
 
   const onSubmit = async () => {
     try {
       const values = await form.validateFields();
-      // TODO: Connect to API when question schema/endpoint is ready
-      console.log("Question submit", { examId: id, ...values });
-      message.success("Question ready to submit");
+
+      setSubmitting(true);
+
+      const newQuestion = {
+        title: values.title,
+        options: values.options,
+        correct: values.correct,
+      };
+
+      // fetch current questions
+      const examRes = await apiGet.get(`/api/admin/exams/${id}`);
+      const exam = examRes.data.data;
+      const current = Array.isArray(exam?.questions) ? exam.questions : [];
+
+      await apiPut.put(`/api/admin/exams/${id}`, {
+        questions: [...current, newQuestion],
+      });
+
+      message.success("Question added");
       form.resetFields();
+      // stay on this page so admin can add more
     } catch (err) {
       if (err?.errorFields) return;
       console.error(err);
       message.error("Failed to submit");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -43,7 +65,9 @@ export default function ExamQuestionsUpload() {
           </Title>
         }
         extra={
-          <Button onClick={() => navigate(`/admin/exams/${id}`)}>Back</Button>
+          <Button onClick={() => navigate(`/admin/exams/${id}/questions`)}>
+            Back
+          </Button>
         }
         style={{ margin: "0 auto", maxWidth: 720 }}
       >
@@ -52,7 +76,13 @@ export default function ExamQuestionsUpload() {
             Fill in the question, options, and select the correct answer.
           </Text>
 
-          <Form form={form} layout="vertical">
+          <Form
+            form={form}
+            layout="vertical"
+            initialValues={{
+              correct: "a",
+            }}
+          >
             <Form.Item
               label="Question title"
               name="title"
@@ -106,6 +136,10 @@ export default function ExamQuestionsUpload() {
               label="Correct answer"
               name="correct"
               rules={[{ required: true, message: "Select the correct answer" }]}
+              valuePropName="value"
+              trigger="onChange"
+              getValueFromEvent={(value) => value}
+              validateTrigger="onChange"
             >
               <Segmented
                 options={[
@@ -118,7 +152,7 @@ export default function ExamQuestionsUpload() {
             </Form.Item>
 
             <Space style={{ marginTop: 8 }}>
-              <Button type="primary" onClick={onSubmit}>
+              <Button type="primary" onClick={onSubmit} loading={submitting}>
                 Submit
               </Button>
               <Button onClick={() => form.resetFields()}>Clear</Button>

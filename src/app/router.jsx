@@ -1,15 +1,16 @@
-import { createBrowserRouter } from "react-router-dom"
-import Login from "../pages/Login"
-import Dashboard from "../pages/Dashboard"
-import Book from "../pages/Book"
-import Blog from "../pages/Blog"
-import AdminLayout from "../layout/AdminLayout"
-import PrivateRoute from "./auth/PrivateRoute"
-import StudentsList from "../pages/Student/StudentsList"
-import Exams from "../pages/Exams/Exams"
-import ExamCreate from "../pages/Exams/ExamCreate"
-import ExamView from "../pages/Exams/ExamView"
-import ExamQuestionsUpload from "../pages/Exams/ExamQuestionsUpload"
+import { createBrowserRouter } from "react-router-dom";
+import Login from "../pages/Login";
+import Dashboard from "../pages/Dashboard";
+import Book from "../pages/Book";
+import Blog from "../pages/Blog";
+import AdminLayout from "../layout/AdminLayout";
+import PrivateRoute from "./auth/PrivateRoute";
+import StudentsList from "../pages/Student/StudentsList";
+import Exams from "../pages/Exams/Exams";
+import ExamCreate from "../pages/Exams/ExamCreate";
+import ExamView from "../pages/Exams/ExamView";
+import ExamQuestionsUpload from "../pages/Exams/ExamQuestionsUpload";
+import ExamQuestions from "../pages/Exams/ExamQuestions";
 
 export const router = createBrowserRouter([
   {
@@ -29,9 +30,13 @@ export const router = createBrowserRouter([
       { path: "/admin/exams", element: <Exams /> },
       { path: "/admin/exams/create", element: <ExamCreate /> },
       { path: "/admin/exams/:id", element: <ExamView /> },
-      { path: "/admin/exams/:id/questions", element: <ExamQuestionsUpload /> },
+      { path: "/admin/exams/:id/questions", element: <ExamQuestions /> },
+      {
+        path: "/admin/exams/:id/questions/add",
+        element: <ExamQuestionsUpload />,
+      },
       { path: "/admin/book", element: <Book /> },
       { path: "/admin/blog", element: <Blog /> },
-    ]
-  }
-])
+    ],
+  },
+]);
