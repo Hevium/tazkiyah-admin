@@ -1,0 +1,217 @@
+import {
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  Switch,
+  Row,
+  Col,
+  Space,
+  message,
+} from "antd";
+import { useEffect, useState } from "react";
+import RichTextEditor from "./RichTextEditor";
+import { apiGet, apiPut } from "../api/apiInstances";
+
+const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const accessType = Form.useWatch("access_type", form);
+  const negativeEnabled = Form.useWatch(
+    ["settings", "negative_marking", "enabled"],
+    form
+  );
+
+  // ================= Fetch Exam =================
+  useEffect(() => {
+    if (!open || !examId) return;
+
+    const fetchExam = async () => {
+      setLoading(true);
+      try {
+        const res = await apiGet.get(`/api/admin/exams/${examId}`);
+        form.setFieldsValue(res.data.data);
+      } catch {
+        messageApi.error("Failed to load exam data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExam();
+  }, [open, examId]);
+
+  // ================= Submit =================
+  const onFinish = async (values) => {
+    try {
+      await apiPut.put(`/api/admin/exams/${examId}`, values);
+
+      messageApi.open({
+        type: "success",
+        content: "Exam updated successfully",
+        duration: 1.5,
+        onClose: () => {
+          onUpdated?.();
+          onClose();
+        },
+      });
+    } catch (error) {
+      messageApi.error(
+        error?.response?.data?.message ||
+          "Failed to update exam"
+      );
+    }
+  };
+
+  return (
+    <>
+      {contextHolder}
+      <Modal
+        title="Edit Exam"
+        open={open}
+        onCancel={onClose}
+        onOk={() => form.submit()}
+        confirmLoading={loading}
+        width={900}
+        okText="Save Changes"
+      >
+        <Form
+          layout="vertical"
+          form={form}
+          onFinish={onFinish}
+        >
+          {/* ===== BASIC ===== */}
+          <Form.Item
+            label="Exam Title"
+            name="exam_title"
+            rules={[{ required: true }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            label="Exam Description"
+            name={["exam_content", "exam_description"]}
+          >
+            <RichTextEditor />
+          </Form.Item>
+
+          {/* ===== RULES ===== */}
+          <Row gutter={16}>
+            <Col span={6}>
+              <Form.Item
+                label="Total Questions"
+                name="total_question"
+                rules={[{ required: true }]}
+              >
+                <InputNumber min={5} style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+
+            <Col span={6}>
+              <Form.Item
+                label="Duration (minutes)"
+                name="duration_minutes"
+                rules={[{ required: true }]}
+              >
+                <InputNumber min={5} style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+
+            <Col span={6}>
+              <Form.Item
+                label="Marks / Question"
+                name="mark_per_question"
+                rules={[{ required: true }]}
+              >
+                <InputNumber min={1} style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+
+            <Col span={6}>
+              <Form.Item
+                label="Pass Marks"
+                name="pass_marks"
+                rules={[{ required: true }]}
+              >
+                <InputNumber min={1} style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          {/* ===== SETTINGS ===== */}
+          <Space size="large">
+            <Form.Item
+              label="Shuffle Questions"
+              name={["settings", "shuffle_questions"]}
+              valuePropName="checked"
+            >
+              <Switch />
+            </Form.Item>
+
+            <Form.Item
+              label="Negative Marking"
+              name={["settings", "negative_marking", "enabled"]}
+              valuePropName="checked"
+            >
+              <Switch />
+            </Form.Item>
+
+            {negativeEnabled && (
+              <Form.Item
+                label="Negative Mark"
+                name={[
+                  "settings",
+                  "negative_marking",
+                  "per_question",
+                ]}
+              >
+                <InputNumber min={0} step={0.25} />
+              </Form.Item>
+            )}
+          </Space>
+
+          {/* ===== ACCESS ===== */}
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item
+                label="Access Type"
+                name="access_type"
+                rules={[{ required: true }]}
+              >
+                <Select>
+                  <Select.Option value="free">
+                    Free
+                  </Select.Option>
+                  <Select.Option value="paid">
+                    Paid
+                  </Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+
+            {accessType === "paid" && (
+              <Col span={8}>
+                <Form.Item
+                  label="Price"
+                  name="price"
+                  rules={[{ required: true }]}
+                >
+                  <InputNumber
+                    min={1}
+                    style={{ width: "100%" }}
+                  />
+                </Form.Item>
+              </Col>
+            )}
+          </Row>
+        </Form>
+      </Modal>
+    </>
+  );
+};
+
+export default EditExamModal;

@@ -7,6 +7,9 @@ import Blog from "../pages/Blog"
 import AdminLayout from "../layout/AdminLayout"
 import PrivateRoute from "./auth/PrivateRoute"
 import StudentsList from "../pages/Student/StudentsList"
+import Exams from "../pages/Exams/Exams"
+import ExamCreate from "../pages/Exams/ExamCreate"
+import ExamView from "../pages/Exams/ExamView"
 
 export const router = createBrowserRouter([
   {
@@ -22,10 +25,12 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Dashboard /> },
-      { path: "students", element: <StudentsList /> },
-      { path: "exam", element: <Exam /> },
-      { path: "book", element: <Book /> },
-      { path: "blog", element: <Blog /> },
+      { path: "/admin/students", element: <StudentsList /> },
+      { path: "/admin/exams", element: <Exams /> },
+      { path: "/admin/exams/create", element: <ExamCreate /> },
+      { path: "/admin/exams/:id", element: <ExamView /> },
+      { path: "/admin/book", element: <Book /> },
+      { path: "/admin/blog", element: <Blog /> },
     ]
   }
 ])

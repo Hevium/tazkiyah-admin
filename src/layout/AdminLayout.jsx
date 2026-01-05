@@ -18,10 +18,10 @@ export default function AdminLayout() {
 
   const menuItems = [
     { key: "/", icon: <DashboardOutlined />, label: "Dashboard" },
-    { key: "/students", icon: <UserOutlined />, label: "Student" },
-    { key: "/exam", icon: <FileTextOutlined />, label: "Exam" },
-    { key: "/book", icon: <BookOutlined />, label: "Book" },
-    { key: "/blog", icon: <FileTextOutlined />, label: "Blog" },
+    { key: "/admin/students", icon: <UserOutlined />, label: "Student" },
+    { key: "/admin/exams", icon: <FileTextOutlined />, label: "Exam" },
+    { key: "/admin/book", icon: <BookOutlined />, label: "Book" },
+    { key: "/admin/blog", icon: <FileTextOutlined />, label: "Blog" },
   ];
   const SidebarMenu = (
     <Menu
