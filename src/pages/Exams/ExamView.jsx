@@ -1,7 +1,19 @@
-import { Card, Tag, Row, Col, Descriptions, Button, Space, Spin } from "antd";
-import { useEffect, useState } from "react";
+import {
+  Card,
+  Tag,
+  Row,
+  Col,
+  Descriptions,
+  Button,
+  Space,
+  Spin,
+  Modal,
+  Upload,
+  message,
+} from "antd";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { apiGet } from "../../api/apiInstances";
+import { apiGet, apiPut } from "../../api/apiInstances";
 import EditExamModal from "../../components/EditExamModal";
 
 const ExamView = () => {
@@ -11,8 +23,13 @@ const ExamView = () => {
   const [exam, setExam] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
+  const [bannerModalOpen, setBannerModalOpen] = useState(false);
+  const [bannerSaving, setBannerSaving] = useState(false);
+  const [bannerDeleting, setBannerDeleting] = useState(false);
 
-  const fetchExam = async () => {
+  const [bannerFileList, setBannerFileList] = useState([]);
+
+  const fetchExam = useCallback(async () => {
     if (!id) return;
     try {
       console.log(id);
@@ -23,11 +40,11 @@ const ExamView = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchExam();
-  }, [id]);
+  }, [fetchExam]);
 
   if (loading) {
     return (
@@ -40,6 +57,88 @@ const ExamView = () => {
   if (!exam) {
     return <p>Exam not found</p>;
   }
+
+  const currentBannerUrl = exam.exam_content?.exam_banner || "";
+
+  const handleDeleteBanner = async () => {
+    if (!id) return;
+    if (!currentBannerUrl) {
+      message.info("Please upload the banner first and then delete it.");
+      return;
+    }
+
+    try {
+      setBannerDeleting(true);
+      const res = await apiPut.put(`/api/admin/exams/${id}`, {
+        exam_content: {
+          ...(exam.exam_content || {}),
+          exam_banner: "",
+        },
+      });
+
+      setExam(res.data.data);
+      message.success("Banner deleted");
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to delete banner");
+    } finally {
+      setBannerDeleting(false);
+    }
+  };
+
+  const openBannerModal = () => {
+    setBannerFileList([]);
+    setBannerModalOpen(true);
+  };
+
+  const handleSaveBanner = async () => {
+    if (!id) return;
+
+    const picked = bannerFileList?.[0]?.originFileObj;
+    if (!picked) {
+      message.info("Please select an image");
+      return;
+    }
+
+    if (!picked.type?.startsWith("image/")) {
+      message.error("Only image files are allowed");
+      return;
+    }
+
+    // keep it safe for JSON payloads
+    const maxBytes = 2 * 1024 * 1024;
+    if (picked.size > maxBytes) {
+      message.error("Image must be 2MB or less");
+      return;
+    }
+
+    try {
+      setBannerSaving(true);
+
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(new Error("File read failed"));
+        reader.readAsDataURL(picked);
+      });
+
+      const res = await apiPut.put(`/api/admin/exams/${id}`, {
+        exam_content: {
+          ...(exam.exam_content || {}),
+          exam_banner: dataUrl,
+        },
+      });
+
+      setExam(res.data.data);
+      setBannerModalOpen(false);
+      message.success("Banner updated");
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to update banner");
+    } finally {
+      setBannerSaving(false);
+    }
+  };
 
   const totalMarks = exam.total_marks;
 
@@ -56,14 +155,60 @@ const ExamView = () => {
         <div
           style={{
             height: 220,
-            backgroundImage: exam.exam_content?.exam_banner
-              ? `url(${exam.exam_content.exam_banner})`
+            backgroundImage: currentBannerUrl
+              ? `url(${currentBannerUrl})`
               : "linear-gradient(135deg, #1677ff, #69b1ff)",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         />
+
+        <Space style={{ padding: "12px 16px" }}>
+          <Button danger loading={bannerDeleting} onClick={handleDeleteBanner}>
+            Delete banner
+          </Button>
+
+          <Button type="primary" onClick={openBannerModal}>
+            Upload banner
+          </Button>
+        </Space>
       </Card>
+
+      <Modal
+        title="Upload banner"
+        open={bannerModalOpen}
+        onCancel={() => setBannerModalOpen(false)}
+        onOk={handleSaveBanner}
+        okText="Save"
+        confirmLoading={bannerSaving}
+        destroyOnClose
+      >
+        <Upload
+          accept="image/*"
+          maxCount={1}
+          beforeUpload={() => false}
+          fileList={bannerFileList}
+          onChange={({ fileList }) => setBannerFileList(fileList.slice(-1))}
+        >
+          <Button>Select image</Button>
+        </Upload>
+
+        {bannerFileList?.[0]?.originFileObj && (
+          <div style={{ marginTop: 12 }}>
+            <Descriptions size="small" column={1} bordered>
+              <Descriptions.Item label="Name">
+                {bannerFileList[0].originFileObj.name}
+              </Descriptions.Item>
+              <Descriptions.Item label="Type">
+                {bannerFileList[0].originFileObj.type || "-"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Size">
+                {(bannerFileList[0].originFileObj.size / 1024).toFixed(1)} KB
+              </Descriptions.Item>
+            </Descriptions>
+          </div>
+        )}
+      </Modal>
 
       {/* ================= HEADER ================= */}
       <Card style={{ marginBottom: 24 }}>
