@@ -234,6 +234,28 @@ const ExamView = () => {
         </Row>
       </Card>
 
+      {/* ================= QUESTION UPLOAD ================= */}
+      <Card title="Questions" style={{ marginBottom: 24 }}>
+        <Row justify="space-between" align="middle" gutter={[16, 16]}>
+          <Col flex="auto">
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>
+              Upload your question set
+            </div>
+            <div style={{ color: "rgba(0,0,0,.45)" }}>
+              Click upload to add questions for this exam.
+            </div>
+          </Col>
+
+          <Col>
+            <Button
+              type="primary"
+              onClick={() => navigate(`/admin/exams/${id}/questions`)}
+            >
+              Upload
+            </Button>
+          </Col>
+        </Row>
+      </Card>
       {/* ================= DESCRIPTION ================= */}
       <Card title="Exam Description" style={{ marginBottom: 24 }}>
         <div

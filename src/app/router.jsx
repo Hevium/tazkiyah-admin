@@ -9,6 +9,7 @@ import StudentsList from "../pages/Student/StudentsList"
 import Exams from "../pages/Exams/Exams"
 import ExamCreate from "../pages/Exams/ExamCreate"
 import ExamView from "../pages/Exams/ExamView"
+import ExamQuestionsUpload from "../pages/Exams/ExamQuestionsUpload"
 
 export const router = createBrowserRouter([
   {
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
       { path: "/admin/exams", element: <Exams /> },
       { path: "/admin/exams/create", element: <ExamCreate /> },
       { path: "/admin/exams/:id", element: <ExamView /> },
+      { path: "/admin/exams/:id/questions", element: <ExamQuestionsUpload /> },
       { path: "/admin/book", element: <Book /> },
       { path: "/admin/blog", element: <Blog /> },
     ]
