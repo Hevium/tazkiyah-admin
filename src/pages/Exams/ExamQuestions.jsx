@@ -148,6 +148,11 @@ export default function ExamQuestions() {
           <List
             dataSource={questions}
             locale={{ emptyText: "No questions found" }}
+            pagination={{
+              pageSize: 15,
+              showSizeChanger: false,
+              hideOnSinglePage: true,
+            }}
             renderItem={(q, idx) => (
               <List.Item
                 actions={[
