@@ -58,7 +58,7 @@ const ExamView = () => {
     return <p>Exam not found</p>;
   }
 
-  const currentBannerUrl = exam.exam_content?.exam_banner || "";
+  const currentBannerUrl = exam.exam_content?.exam_banner ? `http://localhost:5000${exam.exam_content?.exam_banner}` : null;
 
   const handleDeleteBanner = async () => {
     if (!id) return;
@@ -105,7 +105,6 @@ const ExamView = () => {
       return;
     }
 
-    // keep it safe for JSON payloads
     const maxBytes = 2 * 1024 * 1024;
     if (picked.size > maxBytes) {
       message.error("Image must be 2MB or less");
@@ -115,26 +114,21 @@ const ExamView = () => {
     try {
       setBannerSaving(true);
 
-      const dataUrl = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result || ""));
-        reader.onerror = () => reject(new Error("File read failed"));
-        reader.readAsDataURL(picked);
-      });
+      const formData = new FormData();
+      formData.append("banner", picked);
 
-      const res = await apiPut.put(`/api/admin/exams/${id}`, {
-        exam_content: {
-          ...(exam.exam_content || {}),
-          exam_banner: dataUrl,
+      const res = await apiPut.put(`/admin/exams/banner/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
         },
       });
 
       setExam(res.data.data);
       setBannerModalOpen(false);
-      message.success("Banner updated");
+      message.success("Banner uploaded");
     } catch (err) {
       console.error(err);
-      message.error("Failed to update banner");
+      message.error("Failed to upload banner");
     } finally {
       setBannerSaving(false);
     }
