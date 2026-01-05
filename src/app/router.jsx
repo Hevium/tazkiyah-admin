@@ -1,7 +1,6 @@
 import { createBrowserRouter } from "react-router-dom"
 import Login from "../pages/Login"
 import Dashboard from "../pages/Dashboard"
-import Exam from "../pages/Exam"
 import Book from "../pages/Book"
 import Blog from "../pages/Blog"
 import AdminLayout from "../layout/AdminLayout"
@@ -14,7 +13,7 @@ import ExamView from "../pages/Exams/ExamView"
 export const router = createBrowserRouter([
   {
     path: "/login",
-    element: <Login />
+    element: <Login />,
   },
   {
     path: "/",
