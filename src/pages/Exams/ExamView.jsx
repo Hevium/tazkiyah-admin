@@ -10,11 +10,13 @@ import {
   Modal,
   Upload,
   message,
+  Popconfirm,
 } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { apiGet, apiPut } from "../../api/apiInstances";
+import { apiDelete, apiGet, apiPut } from "../../api/apiInstances";
 import EditExamModal from "../../components/EditExamModal";
+import { BulbOutlined, DeleteOutlined, EditOutlined, PlusOutlined, UploadOutlined } from "@ant-design/icons";
 
 const ExamView = () => {
   const { id } = useParams();
@@ -28,6 +30,7 @@ const ExamView = () => {
   const [bannerDeleting, setBannerDeleting] = useState(false);
 
   const [bannerFileList, setBannerFileList] = useState([]);
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const fetchExam = useCallback(async () => {
     if (!id) return;
@@ -58,39 +61,16 @@ const ExamView = () => {
     return <p>Exam not found</p>;
   }
 
-  const currentBannerUrl = exam.exam_content?.exam_banner ? `http://localhost:5000${exam.exam_content?.exam_banner}` : null;
-
-  const handleDeleteBanner = async () => {
-    if (!id) return;
-    if (!currentBannerUrl) {
-      message.info("Please upload the banner first and then delete it.");
-      return;
-    }
-
-    try {
-      setBannerDeleting(true);
-      const res = await apiPut.put(`/api/admin/exams/${id}`, {
-        exam_content: {
-          ...(exam.exam_content || {}),
-          exam_banner: "",
-        },
-      });
-
-      setExam(res.data.data);
-      message.success("Banner deleted");
-    } catch (err) {
-      console.error(err);
-      message.error("Failed to delete banner");
-    } finally {
-      setBannerDeleting(false);
-    }
-  };
+  const currentBannerUrl = exam.exam_content?.exam_banner
+    ? `${BASE_URL}${exam.exam_content.exam_banner}`
+    : null;
 
   const openBannerModal = () => {
     setBannerFileList([]);
     setBannerModalOpen(true);
   };
 
+  // Upload banner
   const handleSaveBanner = async () => {
     if (!id) return;
 
@@ -117,7 +97,7 @@ const ExamView = () => {
       const formData = new FormData();
       formData.append("banner", picked);
 
-      const res = await apiPut.put(`/admin/exams/banner/${id}`, formData, {
+      const res = await apiPut.put(`/api/admin/exams/banner/${id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -131,6 +111,28 @@ const ExamView = () => {
       message.error("Failed to upload banner");
     } finally {
       setBannerSaving(false);
+    }
+  };
+
+  // Delete banner
+  const handleDeleteBanner = async () => {
+    if (!id) return;
+    if (!currentBannerUrl) {
+      message.info("Please upload the banner first and then delete it.");
+      return;
+    }
+
+    try {
+      setBannerDeleting(true);
+      const res = await apiDelete.delete(`/api/admin/exams/banner/${id}`);
+
+      setExam(res.data.data);
+      message.success("Banner deleted");
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to delete banner");
+    } finally {
+      setBannerDeleting(false);
     }
   };
 
@@ -151,20 +153,32 @@ const ExamView = () => {
             height: 220,
             backgroundImage: currentBannerUrl
               ? `url(${currentBannerUrl})`
-              : "linear-gradient(135deg, #1677ff, #69b1ff)",
+              : "linear-gradient(135deg, #003610ff, #69ff96ff)",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         />
 
-        <Space style={{ padding: "12px 16px" }}>
-          <Button danger loading={bannerDeleting} onClick={handleDeleteBanner}>
-            Delete banner
-          </Button>
-
-          <Button type="primary" onClick={openBannerModal}>
-            Upload banner
-          </Button>
+        <Space style={{ padding: "12px 0" }}>
+          {currentBannerUrl ? (
+            <Popconfirm
+              title="Are you sure?"
+              description="This banner will be permanently deleted."
+              okText="Yes, delete"
+              cancelText="Cancel"
+              okButtonProps={{ danger: true, loading: bannerDeleting }}
+              onConfirm={handleDeleteBanner}
+            >
+              <Button danger loading={bannerDeleting}>
+                <DeleteOutlined />
+                Delete banner
+              </Button>
+            </Popconfirm>
+          ) : (
+            <Button type="primary" onClick={openBannerModal}>
+              <UploadOutlined /> Upload banner
+            </Button>
+          )}
         </Space>
       </Card>
 
@@ -220,16 +234,16 @@ const ExamView = () => {
 
           <Col>
             <Space>
-              <Button onClick={() => setEditOpen(true)}>Edit Exam</Button>
+              <Button onClick={() => setEditOpen(true)}><EditOutlined /> Edit Exam</Button>
 
-              <Button onClick={() => navigate("/admin/exams")}>Back</Button>
+              <Button type="primary" onClick={() => navigate(`/admin/exams/${id}/questions`)}><BulbOutlined /> View Question</Button>
             </Space>
           </Col>
         </Row>
       </Card>
 
       {/* ================= QUESTION UPLOAD ================= */}
-      <Card title="Questions" style={{ marginBottom: 24 }}>
+      {/* <Card title="Questions" style={{ marginBottom: 24 }}>
         <Row justify="space-between" align="middle" gutter={[16, 16]}>
           <Col flex="auto">
             <div style={{ fontWeight: 600, marginBottom: 4 }}>
@@ -249,7 +263,7 @@ const ExamView = () => {
             </Button>
           </Col>
         </Row>
-      </Card>
+      </Card> */}
       {/* ================= DESCRIPTION ================= */}
       <Card title="Exam Description" style={{ marginBottom: 24 }}>
         <div

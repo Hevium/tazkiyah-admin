@@ -14,267 +14,371 @@ import {
   Col,
   Segmented,
   message,
+  Pagination,
+  Statistic,
 } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { apiGet, apiPut } from "../../api/apiInstances";
+import { apiGet, apiPut, apiDelete } from "../../api/apiInstances";
+import RichTextEditor from "../../components/RichTextEditor";
 
 const { Title, Text } = Typography;
 
 export default function ExamQuestions() {
-  const { id } = useParams();
+  const { id: examId } = useParams();
   const navigate = useNavigate();
 
+  /* -------------------- STATE -------------------- */
   const [loading, setLoading] = useState(true);
-  const [examTitle, setExamTitle] = useState("");
+  const [saving, setSaving] = useState(false);
+
   const [questions, setQuestions] = useState([]);
+  const [search, setSearch] = useState("");
+
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+  });
+
+  const [exam, setExam] = useState(null);
 
   const [editOpen, setEditOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [editingQuestionId, setEditingQuestionId] = useState(null);
+  const [editingQuestion, setEditingQuestion] = useState(null);
+
   const [editForm] = Form.useForm();
 
-  const fetchQuestions = useCallback(async () => {
-    if (!id) return;
+  /* -------------------- FETCH EXAM -------------------- */
+  const fetchExam = useCallback(async () => {
+    if (!examId) return;
     try {
-      setLoading(true);
-      const res = await apiGet.get(`/api/admin/exams/${id}`);
-      const exam = res.data.data;
-      setExamTitle(exam?.exam_title || "");
-      setQuestions(Array.isArray(exam?.questions) ? exam.questions : []);
+      const res = await apiGet.get(`/api/admin/exams/${examId}`);
+      setExam(res.data.data);
     } catch (err) {
       console.error(err);
-      setQuestions([]);
-    } finally {
-      setLoading(false);
     }
-  }, [id]);
+  }, [examId]);
+
+  /* -------------------- FETCH QUESTIONS -------------------- */
+  const fetchQuestions = useCallback(
+    async (page = 1, searchText = "") => {
+      if (!examId) return;
+
+      try {
+        setLoading(true);
+
+        const res = await apiGet.get(`/api/admin/questions`, {
+          params: {
+            exam_id: examId,
+            page,
+            limit: pagination.limit,
+            search: searchText,
+          },
+        });
+
+        setQuestions(res.data.data || []);
+        setPagination({
+          page: res.data.pagination.page,
+          limit: res.data.pagination.limit,
+          total: res.data.pagination.total,
+        });
+      } catch (err) {
+        console.error(err);
+        message.error("Questions load failed");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [examId, pagination.limit]
+  );
 
   useEffect(() => {
-    fetchQuestions();
-  }, [fetchQuestions]);
+    if (!examId) return;
+    fetchExam();
+    fetchQuestions(1, "");
+  }, [examId, fetchExam, fetchQuestions]);
 
-  const persistQuestions = async (nextQuestions) => {
-    if (!id) return;
+  /* -------------------- DELETE -------------------- */
+  const onDelete = async (questionId) => {
     try {
-      setSaving(true);
-      await apiPut.put(`/api/admin/exams/${id}`, {
-        questions: nextQuestions,
-      });
-      setQuestions(nextQuestions);
-      message.success("Saved");
+      await apiDelete.delete(`/api/admin/questions/${questionId}`);
+      message.success("Question deleted");
+      fetchQuestions(pagination.page, search);
     } catch (err) {
       console.error(err);
-      message.error("Failed to save");
+      message.error("Delete failed");
+    }
+  };
+
+  /* -------------------- EDIT -------------------- */
+  const openEdit = (q) => {
+    setEditingQuestion(q);
+
+    editForm.setFieldsValue({
+      title: q.question_title,
+      options: q.options.map((o) => o.text),
+      correct: q.options.findIndex((o) => o.is_correct),
+      explanation: q.explanation?.note || "",
+    });
+
+    setEditOpen(true);
+  };
+
+  const onEditSave = async () => {
+    try {
+      const values = await editForm.validateFields();
+
+      const payload = {
+        question_title: values.title,
+        options: values.options.map((text, idx) => ({
+          text,
+          is_correct: idx === values.correct,
+        })),
+        explanation: {
+          note: values.explanation || "",
+        },
+      };
+
+      setSaving(true);
+
+      await apiPut.put(`/api/admin/questions/${editingQuestion._id}`, payload);
+
+      message.success("Question updated");
+      setEditOpen(false);
+      setEditingQuestion(null);
+      fetchQuestions(pagination.page, search);
+    } catch (err) {
+      if (err?.errorFields) return;
+      console.error(err);
+      message.error("Update failed");
     } finally {
       setSaving(false);
     }
   };
 
-  const onDelete = async (questionId) => {
-    const next = (questions || []).filter((q) => q?._id !== questionId);
-    await persistQuestions(next);
-  };
-
-  const openEdit = (q) => {
-    setEditingQuestionId(q?._id || null);
-    editForm.setFieldsValue({
-      title: q?.title || "",
-      options: {
-        a: q?.options?.a || "",
-        b: q?.options?.b || "",
-        c: q?.options?.c || "",
-        d: q?.options?.d || "",
-      },
-      correct: q?.correct || "a",
-    });
-    setEditOpen(true);
-  };
-
-  const onEditSave = async () => {
-    if (!editingQuestionId) return;
-    try {
-      const values = await editForm.validateFields();
-      const next = (questions || []).map((q) => {
-        if (q?._id !== editingQuestionId) return q;
-        return {
-          ...q,
-          title: values.title,
-          options: values.options,
-          correct: values.correct,
-        };
-      });
-      await persistQuestions(next);
-      setEditOpen(false);
-      setEditingQuestionId(null);
-    } catch (err) {
-      if (err?.errorFields) return;
-      console.error(err);
-      message.error("Failed to update");
-    }
-  };
-
+  /* -------------------- UI -------------------- */
   return (
-    <div style={{ padding: 16 }}>
+    <div style={{ padding: 24 }}>
       <Card
-        style={{ margin: "0 auto", maxWidth: 900 }}
         title={
-          <div>
-            <Title level={4} style={{ margin: 0 }}>
-              Questions
+          <>
+            <Title level={4} style={{ marginBottom: 0 }}>
+              {exam?.exam_title || "Exam Questions"}
             </Title>
-            <Text type="secondary">
-              {examTitle ? `Exam: ${examTitle}` : ""}
-            </Text>
-          </div>
+            <Text type="secondary">Exam ID: {examId}</Text>
+          </>
         }
         extra={
           <Space>
-            <Button onClick={() => navigate(`/admin/exams/${id}`)}>Back</Button>
+            <Button onClick={() => navigate(-1)}>Back</Button>
             <Button
               type="primary"
-              onClick={() => navigate(`/admin/exams/${id}/questions/add`)}
+              onClick={() => navigate(`/admin/exams/${examId}/questions/add`)}
             >
-              Add question
+              Add Question
             </Button>
           </Space>
         }
       >
         {loading ? (
-          <div style={{ textAlign: "center", padding: 24 }}>
+          <div style={{ textAlign: "center", padding: 40 }}>
             <Spin />
           </div>
         ) : (
-          <List
-            dataSource={questions}
-            locale={{ emptyText: "No questions found" }}
-            pagination={{
-              pageSize: 15,
-              showSizeChanger: false,
-              hideOnSinglePage: true,
-            }}
-            renderItem={(q, idx) => (
-              <List.Item
-                actions={[
-                  <Button key="edit" onClick={() => openEdit(q)}>
-                    Edit
-                  </Button>,
-                  <Popconfirm
-                    key="delete"
-                    title="Delete this question?"
-                    okText="Delete"
-                    okButtonProps={{ danger: true }}
-                    onConfirm={() => onDelete(q?._id)}
-                  >
-                    <Button danger>Delete</Button>
-                  </Popconfirm>,
-                ]}
-              >
-                <div style={{ width: "100%" }}>
-                  <Space
-                    style={{ width: "100%", justifyContent: "space-between" }}
-                  >
-                    <div>
-                      <div style={{ fontWeight: 600 }}>
-                        {idx + 1}. {q?.title || "(Untitled)"}
-                      </div>
-                      <Text type="secondary">
-                        A: {q?.options?.a || "-"} | B: {q?.options?.b || "-"} |
-                        C: {q?.options?.c || "-"} | D: {q?.options?.d || "-"}
-                      </Text>
+          <div style={{ maxWidth: 900, margin: "0 auto" }}>
+            {/* ---------- SUMMARY ---------- */}
+            <Row gutter={16}>
+              {/* Question Limit */}
+              <Col span={8} style={{ display: "flex" }}>
+                <Card style={{ width: "100%" }}>
+                  <Statistic
+                    title="Question Limit"
+                    value={exam?.total_question || 0}
+                  />
+                </Card>
+              </Col>
+
+              {/* Added Questions */}
+              <Col span={8} style={{ display: "flex" }}>
+                <Card style={{ width: "100%" }}>
+                  <Statistic
+                    title={
+                      <Space size={6}>
+                        <Text type="secondary">Added Questions</Text>
+                        {search && <Tag color="blue">Filtered</Tag>}
+                      </Space>
+                    }
+                    value={pagination.total}
+                  />
+
+                  {search && (
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Showing results for "{search}"
+                    </Text>
+                  )}
+                </Card>
+              </Col>
+
+              {/* Progress */}
+              <Col span={8} style={{ display: "flex" }}>
+                <Card style={{ width: "100%" }}>
+                  <Statistic
+                    title="Progress"
+                    value={
+                      exam?.total_question
+                        ? Math.round(
+                            (pagination.total / exam.total_question) * 100
+                          )
+                        : 0
+                    }
+                    suffix="%"
+                  />
+                </Card>
+              </Col>
+            </Row>
+
+            {/* ---------- SEARCH ---------- */}
+            <Input.Search
+              placeholder="Search question..."
+              allowClear
+              enterButton
+              style={{ maxWidth: 400, margin: "16px 0" }}
+              onSearch={(value) => {
+                setSearch(value);
+                fetchQuestions(1, value);
+              }}
+            />
+
+
+            {/* ---------- QUESTIONS LIST ---------- */}
+            <List
+              dataSource={questions}
+              locale={{ emptyText: "No questions found" }}
+              itemLayout="vertical"
+              renderItem={(q, index) => (
+                <Card
+                  key={q._id}
+                  style={{ marginBottom: 16, borderRadius: 10 }}
+                  actions={[
+                    <Button type="link" onClick={() => openEdit(q)}>
+                      Edit
+                    </Button>,
+                    <Popconfirm
+                      title="Delete this question?"
+                      okText="Delete"
+                      okButtonProps={{ danger: true }}
+                      onConfirm={() => onDelete(q._id)}
+                    >
+                      <Button type="link" danger>
+                        Delete
+                      </Button>
+                    </Popconfirm>,
+                  ]}
+                >
+                  <Title level={5}>
+                    {(pagination.page - 1) * pagination.limit + index + 1}.{" "}
+                    {q.question_title}
+                  </Title>
+
+                  {q.options.map((opt, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        padding: 10,
+                        marginBottom: 8,
+                        borderRadius: 6,
+                        border: `1px solid ${
+                          opt.is_correct ? "#52c41a" : "#d9d9d9"
+                        }`,
+                        background: opt.is_correct ? "#f6ffed" : "#fafafa",
+                        display: "flex",
+                        gap: 10,
+                      }}
+                    >
+                      <strong>{String.fromCharCode(65 + i)}.</strong>
+                      <span style={{ flex: 1 }}>{opt.text}</span>
+                      {opt.is_correct && <Tag color="green">Correct</Tag>}
                     </div>
-                    <Tag color="green">
-                      Correct: {(q?.correct || "-").toUpperCase()}
-                    </Tag>
-                  </Space>
-                </div>
-              </List.Item>
+                  ))}
+
+                  {q.explanation?.note && (
+                    <div style={{ marginTop: 12 }}>
+                      <Text strong>Explanation:</Text>
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: q.explanation.note,
+                        }}
+                      />
+                    </div>
+                  )}
+                </Card>
+              )}
+            />
+
+            {/* ---------- PAGINATION ---------- */}
+            {pagination.total > pagination.limit && (
+              <div style={{ textAlign: "center", marginTop: 24 }}>
+                <Pagination
+                  current={pagination.page}
+                  total={pagination.total}
+                  pageSize={pagination.limit}
+                  showSizeChanger={false}
+                  onChange={(page) => {
+                    setPagination((prev) => ({ ...prev, page }));
+                    fetchQuestions(page, search);
+                  }}
+                />
+              </div>
             )}
-          />
+          </div>
         )}
       </Card>
 
+      {/* ---------- EDIT MODAL ---------- */}
       <Modal
-        title="Edit question"
+        title="Edit Question"
         open={editOpen}
-        onCancel={() => {
-          setEditOpen(false);
-          setEditingQuestionId(null);
-        }}
+        onCancel={() => setEditOpen(false)}
         onOk={onEditSave}
-        okText="Save"
         confirmLoading={saving}
-        destroyOnClose
       >
-        <Form
-          form={editForm}
-          layout="vertical"
-          initialValues={{ correct: "a" }}
-        >
-          <Form.Item
-            label="Question title"
-            name="title"
-            rules={[{ required: true, message: "Question title is required" }]}
-          >
-            <Input.TextArea rows={2} placeholder="Write the question..." />
+        <Form layout="vertical" form={editForm}>
+          <Form.Item label="Question" name="title" rules={[{ required: true }]}>
+            <Input.TextArea rows={2} />
           </Form.Item>
 
-          <Row gutter={[12, 12]}>
-            <Col xs={24} md={12}>
-              <Form.Item
-                label="Option A"
-                name={["options", "a"]}
-                rules={[{ required: true, message: "Option A is required" }]}
-              >
-                <Input placeholder="Option A" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item
-                label="Option B"
-                name={["options", "b"]}
-                rules={[{ required: true, message: "Option B is required" }]}
-              >
-                <Input placeholder="Option B" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item
-                label="Option C"
-                name={["options", "c"]}
-                rules={[{ required: true, message: "Option C is required" }]}
-              >
-                <Input placeholder="Option C" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item
-                label="Option D"
-                name={["options", "d"]}
-                rules={[{ required: true, message: "Option D is required" }]}
-              >
-                <Input placeholder="Option D" />
-              </Form.Item>
-            </Col>
-          </Row>
+          <Form.List name="options">
+            {(fields) =>
+              fields.map((field, idx) => (
+                <Form.Item
+                  key={field.key}
+                  label={`Option ${String.fromCharCode(65 + idx)}`}
+                  name={field.name}
+                  rules={[{ required: true }]}
+                >
+                  <Input />
+                </Form.Item>
+              ))
+            }
+          </Form.List>
 
           <Form.Item
-            label="Correct answer"
+            label="Correct Answer"
             name="correct"
-            rules={[{ required: true, message: "Select the correct answer" }]}
-            valuePropName="value"
-            trigger="onChange"
-            getValueFromEvent={(value) => value}
-            validateTrigger="onChange"
+            rules={[{ required: true }]}
           >
             <Segmented
               options={[
-                { label: "A", value: "a" },
-                { label: "B", value: "b" },
-                { label: "C", value: "c" },
-                { label: "D", value: "d" },
+                { label: "A", value: 0 },
+                { label: "B", value: 1 },
+                { label: "C", value: 2 },
+                { label: "D", value: 3 },
               ]}
             />
+          </Form.Item>
+
+          <Form.Item label="Explanation" name="explanation">
+            <RichTextEditor />
           </Form.Item>
         </Form>
       </Modal>
