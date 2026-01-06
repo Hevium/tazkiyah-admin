@@ -10,43 +10,61 @@ import {
   Segmented,
   message,
 } from "antd";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { apiGet, apiPut } from "../../api/apiInstances";
+import { apiGet, apiPost } from "../../api/apiInstances";
+import RichTextEditor from "../../components/RichTextEditor";
 
 const { Title, Text } = Typography;
 
-export default function ExamQuestionsUpload() {
-  const { id } = useParams();
+export default function AddQuestion() {
+  const { id: examId } = useParams();
   const navigate = useNavigate();
 
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
+  const [exam, setExam] = useState(null);
+
+  /* -------------------- FETCH EXAM -------------------- */
+  const fetchExam = useCallback(async () => {
+    if (!examId) return;
+    try {
+      const res = await apiGet.get(`/api/admin/exams/${examId}`);
+      setExam(res.data.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [examId]);
+
+  useEffect(() => {
+    if (!examId) return;
+    fetchExam();
+  }, [examId, fetchExam]);
 
   const onSubmit = async () => {
     try {
       const values = await form.validateFields();
-
       setSubmitting(true);
 
-      const newQuestion = {
-        title: values.title,
-        options: values.options,
-        correct: values.correct,
+      const optionKeys = ["a", "b", "c", "d"];
+      const options = optionKeys
+        .map((key) => ({
+          text: (values.options?.[key] ?? "").trim(),
+          is_correct: values.correct === key,
+        }))
+        .filter((opt) => opt.text.length > 0);
+
+      const payload = {
+        exam_id: examId,
+        question_title: values.question_title,
+        options,
+        explanation: {note: values.note}
       };
 
-      // fetch current questions
-      const examRes = await apiGet.get(`/api/admin/exams/${id}`);
-      const exam = examRes.data.data;
-      const current = Array.isArray(exam?.questions) ? exam.questions : [];
-
-      await apiPut.put(`/api/admin/exams/${id}`, {
-        questions: [...current, newQuestion],
-      });
+      await apiPost.post(`/api/admin/questions`, payload);
 
       message.success("Question added");
       form.resetFields();
-      // stay on this page so admin can add more
     } catch (err) {
       if (err?.errorFields) return;
       console.error(err);
@@ -65,12 +83,17 @@ export default function ExamQuestionsUpload() {
           </Title>
         }
         extra={
-          <Button onClick={() => navigate(`/admin/exams/${id}/questions`)}>
+          <Button onClick={() => navigate(`/admin/exams/${examId}/questions`)}>
             Back
           </Button>
         }
         style={{ margin: "0 auto", maxWidth: 720 }}
       >
+        <Title level={5} style={{ margin: 0 }}>
+          Exam title:{" "}
+          <span style={{ color: "green" }}>{exam?.exam_title || "N/A"}</span>
+        </Title>
+
         <Space direction="vertical" size={16} style={{ width: "100%" }}>
           <Text type="secondary">
             Fill in the question, options, and select the correct answer.
@@ -85,7 +108,7 @@ export default function ExamQuestionsUpload() {
           >
             <Form.Item
               label="Question title"
-              name="title"
+              name="question_title"
               rules={[
                 { required: true, message: "Question title is required" },
               ]}
@@ -149,6 +172,10 @@ export default function ExamQuestionsUpload() {
                   { label: "D", value: "d" },
                 ]}
               />
+            </Form.Item>
+
+            <Form.Item label="Explanation" name="note">
+              <RichTextEditor />
             </Form.Item>
 
             <Space style={{ marginTop: 8 }}>

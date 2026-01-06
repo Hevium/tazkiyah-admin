@@ -103,7 +103,7 @@ const ExamCreate = () => {
       {/* ================= EXAM RULES ================= */}
       <Card title="Exam Rules" style={{ marginBottom: 24 }}>
         <Row gutter={24}>
-          <Col xs={24} md={6}>
+          <Col xs={24} md={8}>
             <Form.Item
               label="Total Questions"
               name="total_question"
@@ -120,7 +120,7 @@ const ExamCreate = () => {
             </Form.Item>
           </Col>
 
-          <Col xs={24} md={6}>
+          <Col xs={24} md={8}>
             <Form.Item
               label="Duration (minutes)"
               name="duration_minutes"
@@ -137,7 +137,27 @@ const ExamCreate = () => {
             </Form.Item>
           </Col>
 
-          <Col xs={24} md={6}>
+          <Col xs={24} md={8}>
+            <Form.Item
+              label="Exam Date & Time"
+              name="exam_datetime"
+              tooltip="When the exam starts (date and time)"
+            >
+              <Input size="large" type="datetime-local" />
+            </Form.Item>
+          </Col>
+
+          <Col xs={24} md={8}>
+            <Form.Item
+              label="Registration End Date"
+              name="registration_end_datetime"
+              tooltip="Last date and time for registration"
+            >
+              <Input size="large" type="datetime-local" />
+            </Form.Item>
+          </Col>
+
+          <Col xs={24} md={12}>
             <Form.Item
               label="Marks per Question"
               name="mark_per_question"
@@ -154,7 +174,7 @@ const ExamCreate = () => {
             </Form.Item>
           </Col>
 
-          <Col xs={24} md={6}>
+          <Col xs={24} md={12}>
             <Form.Item
               label="Pass Marks"
               name="pass_marks"

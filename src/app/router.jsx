@@ -9,7 +9,7 @@ import StudentsList from "../pages/Student/StudentsList";
 import Exams from "../pages/Exams/Exams";
 import ExamCreate from "../pages/Exams/ExamCreate";
 import ExamView from "../pages/Exams/ExamView";
-import ExamQuestionsUpload from "../pages/Exams/ExamQuestionsUpload";
+import AddQuestion from "../pages/Exams/AddQuestion";
 import ExamQuestions from "../pages/Exams/ExamQuestions";
 
 export const router = createBrowserRouter([
@@ -33,7 +33,7 @@ export const router = createBrowserRouter([
       { path: "/admin/exams/:id/questions", element: <ExamQuestions /> },
       {
         path: "/admin/exams/:id/questions/add",
-        element: <ExamQuestionsUpload />,
+        element: <AddQuestion/>,
       },
       { path: "/admin/book", element: <Book /> },
       { path: "/admin/blog", element: <Blog /> },

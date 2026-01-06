@@ -16,7 +16,13 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { apiDelete, apiGet, apiPut } from "../../api/apiInstances";
 import EditExamModal from "../../components/EditExamModal";
-import { BulbOutlined, DeleteOutlined, EditOutlined, PlusOutlined, UploadOutlined } from "@ant-design/icons";
+import {
+  BulbOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 
 const ExamView = () => {
   const { id } = useParams();
@@ -44,6 +50,8 @@ const ExamView = () => {
       setLoading(false);
     }
   }, [id]);
+
+  console.log(exam);
 
   useEffect(() => {
     fetchExam();
@@ -137,6 +145,21 @@ const ExamView = () => {
   };
 
   const totalMarks = exam.total_marks;
+
+  const formattedExamDateTime = (() => {
+    if (!exam?.exam_datetime) return "-";
+    const date = new Date(exam.exam_datetime);
+    if (Number.isNaN(date.getTime())) return "-";
+
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(date);
+  })();
 
   return (
     <div style={{ padding: 16 }}>
@@ -234,9 +257,16 @@ const ExamView = () => {
 
           <Col>
             <Space>
-              <Button onClick={() => setEditOpen(true)}><EditOutlined /> Edit Exam</Button>
+              <Button onClick={() => setEditOpen(true)}>
+                <EditOutlined /> Edit Exam
+              </Button>
 
-              <Button type="primary" onClick={() => navigate(`/admin/exams/${id}/questions`)}><BulbOutlined /> View Question</Button>
+              <Button
+                type="primary"
+                onClick={() => navigate(`/admin/exams/${id}/questions`)}
+              >
+                <BulbOutlined /> View Question
+              </Button>
             </Space>
           </Col>
         </Row>
@@ -276,6 +306,9 @@ const ExamView = () => {
       {/* ================= OVERVIEW ================= */}
       <Card title="Exam Overview" style={{ marginBottom: 24 }}>
         <Descriptions bordered column={2}>
+          <Descriptions.Item label="Exam Date & Time">
+            {formattedExamDateTime}
+          </Descriptions.Item>
           <Descriptions.Item label="Duration">
             {exam.duration_minutes} minutes
           </Descriptions.Item>
