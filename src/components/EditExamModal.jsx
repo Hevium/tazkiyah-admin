@@ -9,8 +9,10 @@ import {
   Col,
   Space,
   message,
+  DatePicker,
 } from "antd";
 import { useEffect, useState } from "react";
+import dayjs from "dayjs";
 import RichTextEditor from "./RichTextEditor";
 import { apiGet, apiPut } from "../api/apiInstances";
 
@@ -33,7 +35,15 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
       setLoading(true);
       try {
         const res = await apiGet.get(`/api/admin/exams/${examId}`);
-        form.setFieldsValue(res.data.data);
+        const data = res.data.data;
+
+        form.setFieldsValue({
+          ...data,
+          exam_datetime: data.exam_datetime ? dayjs(data.exam_datetime) : null,
+          registration_end_datetime: data.registration_end_datetime
+            ? dayjs(data.registration_end_datetime)
+            : null,
+        });
       } catch {
         messageApi.error("Failed to load exam data");
       } finally {
@@ -42,13 +52,30 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
     };
 
     fetchExam();
-  }, [open, examId]);
+  }, [open, examId, form, messageApi]);
 
   // ================= Submit =================
   const onFinish = async (values) => {
-    try {
-      await apiPut.put(`/api/admin/exams/${examId}`, values);
+    const payload = {
+      ...values,
+      exam_datetime: values.exam_datetime
+        ? values.exam_datetime.toISOString()
+        : null,
+      registration_end_datetime: values.registration_end_datetime
+        ? values.registration_end_datetime.toISOString()
+        : null,
+    };
 
+    if (!payload.settings?.negative_marking?.enabled) {
+      payload.settings.negative_marking.per_question = 0;
+    }
+
+    if (payload.access_type !== "paid") {
+      payload.price = 0;
+    }
+
+    try {
+      await apiPut.put(`/api/admin/exams/${examId}`, payload);
       messageApi.open({
         type: "success",
         content: "Exam updated successfully",
@@ -60,8 +87,7 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
       });
     } catch (error) {
       messageApi.error(
-        error?.response?.data?.message ||
-          "Failed to update exam"
+        error?.response?.data?.message || "Failed to update exam"
       );
     }
   };
@@ -78,16 +104,12 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
         width={900}
         okText="Save Changes"
       >
-        <Form
-          layout="vertical"
-          form={form}
-          onFinish={onFinish}
-        >
+        <Form layout="vertical" form={form} onFinish={onFinish}>
           {/* ===== BASIC ===== */}
           <Form.Item
             label="Exam Title"
             name="exam_title"
-            rules={[{ required: true }]}
+            rules={[{ required: true, message: "Exam title is required" }]}
           >
             <Input />
           </Form.Item>
@@ -98,6 +120,38 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
           >
             <RichTextEditor />
           </Form.Item>
+
+          {/* ===== DATE & TIME ===== */}
+          <Row gutter={16}>
+            <Col xs={24} md={8}>
+              <Form.Item
+                label="Exam Date & Time"
+                name="exam_datetime"
+                tooltip="When the exam starts (date and time)"
+                rules={[{ required: true }]}
+              >
+                <DatePicker
+                  showTime
+                  format="YYYY-MM-DD HH:mm"
+                  style={{ width: "100%" }}
+                />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} md={8}>
+              <Form.Item
+                label="Registration End Date"
+                name="registration_end_datetime"
+                tooltip="Last date and time for registration"
+              >
+                <DatePicker
+                  showTime
+                  format="YYYY-MM-DD HH:mm"
+                  style={{ width: "100%" }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
 
           {/* ===== RULES ===== */}
           <Row gutter={16}>
@@ -143,7 +197,7 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
           </Row>
 
           {/* ===== SETTINGS ===== */}
-          <Space size="large">
+          <Space size="large" wrap>
             <Form.Item
               label="Shuffle Questions"
               name={["settings", "shuffle_questions"]}
@@ -162,12 +216,9 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
 
             {negativeEnabled && (
               <Form.Item
-                label="Negative Mark"
-                name={[
-                  "settings",
-                  "negative_marking",
-                  "per_question",
-                ]}
+                label="Negative Mark / Question"
+                name={["settings", "negative_marking", "per_question"]}
+                rules={[{ required: true }]}
               >
                 <InputNumber min={0} step={0.25} />
               </Form.Item>
@@ -183,12 +234,8 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
                 rules={[{ required: true }]}
               >
                 <Select>
-                  <Select.Option value="free">
-                    Free
-                  </Select.Option>
-                  <Select.Option value="paid">
-                    Paid
-                  </Select.Option>
+                  <Select.Option value="free">Free</Select.Option>
+                  <Select.Option value="paid">Paid</Select.Option>
                 </Select>
               </Form.Item>
             </Col>
@@ -200,13 +247,40 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
                   name="price"
                   rules={[{ required: true }]}
                 >
-                  <InputNumber
-                    min={1}
-                    style={{ width: "100%" }}
-                  />
+                  <InputNumber min={1} style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
             )}
+          </Row>
+
+          {/* ===== STATUS ===== */}
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item
+                label="Exam Status"
+                name="exam_status"
+                rules={[{ required: true }]}
+              >
+                <Select>
+                  <Select.Option value="draft">Draft</Select.Option>
+                  <Select.Option value="published">Published</Select.Option>
+                  <Select.Option value="closed">Closed</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+
+            <Col span={8}>
+              <Form.Item
+                label="Result Status"
+                name="result_status"
+                rules={[{ required: true }]}
+              >
+                <Select>
+                  <Select.Option value="hidden">Hidden</Select.Option>
+                  <Select.Option value="published">Published</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
           </Row>
         </Form>
       </Modal>
