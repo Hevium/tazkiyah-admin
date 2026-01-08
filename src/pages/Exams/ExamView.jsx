@@ -1,8 +1,28 @@
-import { Card, Tag, Row, Col, Descriptions, Button, Space, Spin } from "antd";
-import { useEffect, useState } from "react";
+import {
+  Card,
+  Tag,
+  Row,
+  Col,
+  Descriptions,
+  Button,
+  Space,
+  Spin,
+  Modal,
+  Upload,
+  message,
+  Popconfirm,
+} from "antd";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { apiGet } from "../../api/apiInstances";
+import { apiDelete, apiGet, apiPut } from "../../api/apiInstances";
 import EditExamModal from "../../components/EditExamModal";
+import {
+  BulbOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 
 const ExamView = () => {
   const { id } = useParams();
@@ -11,8 +31,14 @@ const ExamView = () => {
   const [exam, setExam] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
+  const [bannerModalOpen, setBannerModalOpen] = useState(false);
+  const [bannerSaving, setBannerSaving] = useState(false);
+  const [bannerDeleting, setBannerDeleting] = useState(false);
 
-  const fetchExam = async () => {
+  const [bannerFileList, setBannerFileList] = useState([]);
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+  const fetchExam = useCallback(async () => {
     if (!id) return;
     try {
       console.log(id);
@@ -23,11 +49,13 @@ const ExamView = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  console.log(exam);
 
   useEffect(() => {
     fetchExam();
-  }, [id]);
+  }, [fetchExam]);
 
   if (loading) {
     return (
@@ -41,7 +69,97 @@ const ExamView = () => {
     return <p>Exam not found</p>;
   }
 
+  const currentBannerUrl = exam.exam_content?.exam_banner
+    ? `${BASE_URL}${exam.exam_content.exam_banner}`
+    : null;
+
+  const openBannerModal = () => {
+    setBannerFileList([]);
+    setBannerModalOpen(true);
+  };
+
+  // Upload banner
+  const handleSaveBanner = async () => {
+    if (!id) return;
+
+    const picked = bannerFileList?.[0]?.originFileObj;
+    if (!picked) {
+      message.info("Please select an image");
+      return;
+    }
+
+    if (!picked.type?.startsWith("image/")) {
+      message.error("Only image files are allowed");
+      return;
+    }
+
+    const maxBytes = 2 * 1024 * 1024;
+    if (picked.size > maxBytes) {
+      message.error("Image must be 2MB or less");
+      return;
+    }
+
+    try {
+      setBannerSaving(true);
+
+      const formData = new FormData();
+      formData.append("banner", picked);
+
+      const res = await apiPut.put(`/api/admin/exams/banner/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setExam(res.data.data);
+      setBannerModalOpen(false);
+      message.success("Banner uploaded");
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to upload banner");
+    } finally {
+      setBannerSaving(false);
+    }
+  };
+
+  // Delete banner
+  const handleDeleteBanner = async () => {
+    if (!id) return;
+    if (!currentBannerUrl) {
+      message.info("Please upload the banner first and then delete it.");
+      return;
+    }
+
+    try {
+      setBannerDeleting(true);
+      const res = await apiDelete.delete(`/api/admin/exams/banner/${id}`);
+
+      setExam(res.data.data);
+      message.success("Banner deleted");
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to delete banner");
+    } finally {
+      setBannerDeleting(false);
+    }
+  };
+
   const totalMarks = exam.total_marks;
+
+  const formattedExamDateTime = (() => {
+    if (!exam?.exam_datetime) return "-";
+    const date = new Date(exam.exam_datetime);
+    if (Number.isNaN(date.getTime())) return "-";
+
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(date);
+  })();
 
   return (
     <div style={{ padding: 16 }}>
@@ -56,14 +174,72 @@ const ExamView = () => {
         <div
           style={{
             height: 220,
-            backgroundImage: exam.exam_content?.exam_banner
-              ? `url(${exam.exam_content.exam_banner})`
-              : "linear-gradient(135deg, #1677ff, #69b1ff)",
+            backgroundImage: currentBannerUrl
+              ? `url(${currentBannerUrl})`
+              : "linear-gradient(135deg, #003610ff, #69ff96ff)",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         />
+
+        <Space style={{ padding: "12px 0" }}>
+          {currentBannerUrl ? (
+            <Popconfirm
+              title="Are you sure?"
+              description="This banner will be permanently deleted."
+              okText="Yes, delete"
+              cancelText="Cancel"
+              okButtonProps={{ danger: true, loading: bannerDeleting }}
+              onConfirm={handleDeleteBanner}
+            >
+              <Button danger loading={bannerDeleting}>
+                <DeleteOutlined />
+                Delete banner
+              </Button>
+            </Popconfirm>
+          ) : (
+            <Button type="primary" onClick={openBannerModal}>
+              <UploadOutlined /> Upload banner
+            </Button>
+          )}
+        </Space>
       </Card>
+
+      <Modal
+        title="Upload banner"
+        open={bannerModalOpen}
+        onCancel={() => setBannerModalOpen(false)}
+        onOk={handleSaveBanner}
+        okText="Save"
+        confirmLoading={bannerSaving}
+        destroyOnClose
+      >
+        <Upload
+          accept="image/*"
+          maxCount={1}
+          beforeUpload={() => false}
+          fileList={bannerFileList}
+          onChange={({ fileList }) => setBannerFileList(fileList.slice(-1))}
+        >
+          <Button>Select image</Button>
+        </Upload>
+
+        {bannerFileList?.[0]?.originFileObj && (
+          <div style={{ marginTop: 12 }}>
+            <Descriptions size="small" column={1} bordered>
+              <Descriptions.Item label="Name">
+                {bannerFileList[0].originFileObj.name}
+              </Descriptions.Item>
+              <Descriptions.Item label="Type">
+                {bannerFileList[0].originFileObj.type || "-"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Size">
+                {(bannerFileList[0].originFileObj.size / 1024).toFixed(1)} KB
+              </Descriptions.Item>
+            </Descriptions>
+          </div>
+        )}
+      </Modal>
 
       {/* ================= HEADER ================= */}
       <Card style={{ marginBottom: 24 }}>
@@ -81,14 +257,43 @@ const ExamView = () => {
 
           <Col>
             <Space>
-              <Button onClick={() => setEditOpen(true)}>Edit Exam</Button>
+              <Button onClick={() => setEditOpen(true)}>
+                <EditOutlined /> Edit Exam
+              </Button>
 
-              <Button onClick={() => navigate("/admin/exams")}>Back</Button>
+              <Button
+                type="primary"
+                onClick={() => navigate(`/admin/exams/${id}/questions`)}
+              >
+                <BulbOutlined /> View Question
+              </Button>
             </Space>
           </Col>
         </Row>
       </Card>
 
+      {/* ================= QUESTION UPLOAD ================= */}
+      {/* <Card title="Questions" style={{ marginBottom: 24 }}>
+        <Row justify="space-between" align="middle" gutter={[16, 16]}>
+          <Col flex="auto">
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>
+              Upload your question set
+            </div>
+            <div style={{ color: "rgba(0,0,0,.45)" }}>
+              Click upload to add questions for this exam.
+            </div>
+          </Col>
+
+          <Col>
+            <Button
+              type="primary"
+              onClick={() => navigate(`/admin/exams/${id}/questions`)}
+            >
+              Upload
+            </Button>
+          </Col>
+        </Row>
+      </Card> */}
       {/* ================= DESCRIPTION ================= */}
       <Card title="Exam Description" style={{ marginBottom: 24 }}>
         <div
@@ -101,6 +306,9 @@ const ExamView = () => {
       {/* ================= OVERVIEW ================= */}
       <Card title="Exam Overview" style={{ marginBottom: 24 }}>
         <Descriptions bordered column={2}>
+          <Descriptions.Item label="Exam Date & Time">
+            {formattedExamDateTime}
+          </Descriptions.Item>
           <Descriptions.Item label="Duration">
             {exam.duration_minutes} minutes
           </Descriptions.Item>
