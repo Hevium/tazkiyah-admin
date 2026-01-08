@@ -41,7 +41,6 @@ const ExamView = () => {
   const fetchExam = useCallback(async () => {
     if (!id) return;
     try {
-      console.log(id);
       const res = await apiGet.get(`/api/admin/exams/${id}`);
       setExam(res.data.data);
     } catch (err) {
@@ -51,7 +50,6 @@ const ExamView = () => {
     }
   }, [id]);
 
-  console.log(exam);
 
   useEffect(() => {
     fetchExam();
@@ -149,6 +147,20 @@ const ExamView = () => {
   const formattedExamDateTime = (() => {
     if (!exam?.exam_datetime) return "-";
     const date = new Date(exam.exam_datetime);
+    if (Number.isNaN(date.getTime())) return "-";
+
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(date);
+  })();
+  const formattedRegistrationDateTime = (() => {
+    if (!exam?.registration_end_datetime) return "-";
+    const date = new Date(exam.registration_end_datetime);
     if (Number.isNaN(date.getTime())) return "-";
 
     return new Intl.DateTimeFormat("en-US", {
@@ -307,6 +319,9 @@ const ExamView = () => {
       <Card title="Exam Overview" style={{ marginBottom: 24 }}>
         <Descriptions bordered column={2}>
           <Descriptions.Item label="Exam Date & Time">
+            {formattedRegistrationDateTime}
+          </Descriptions.Item>
+          <Descriptions.Item label="Exam Date & Time">
             {formattedExamDateTime}
           </Descriptions.Item>
           <Descriptions.Item label="Duration">
@@ -323,6 +338,9 @@ const ExamView = () => {
           </Descriptions.Item>
           <Descriptions.Item label="Pass Marks">
             {exam.pass_marks}
+          </Descriptions.Item>
+          <Descriptions.Item label="Result Published">
+            {exam.result_status === "published" ? "Yes" : "No"}
           </Descriptions.Item>
         </Descriptions>
       </Card>
