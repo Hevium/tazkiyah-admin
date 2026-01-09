@@ -26,6 +26,7 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
     ["settings", "negative_marking", "enabled"],
     form
   );
+  const [examData, setExamData] = useState({});
 
   // ================= Fetch Exam =================
   useEffect(() => {
@@ -36,6 +37,7 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
       try {
         const res = await apiGet.get(`/api/admin/exams/${examId}`);
         const data = res.data.data;
+        setExamData(data);
 
         form.setFieldsValue({
           ...data,
@@ -64,6 +66,7 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
       registration_end_datetime: values.registration_end_datetime
         ? values.registration_end_datetime.toISOString()
         : null,
+      
     };
 
     if (!payload.settings?.negative_marking?.enabled) {
@@ -72,6 +75,9 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
 
     if (payload.access_type !== "paid") {
       payload.price = 0;
+    }
+    if(examData?.exam_content?.exam_banner){
+      payload.exam_content.exam_banner = examData.exam_content.exam_banner
     }
 
     try {
@@ -278,6 +284,18 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
                 <Select>
                   <Select.Option value="hidden">Hidden</Select.Option>
                   <Select.Option value="published">Published</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                label="Available for Attempt"
+                name="attempt_status"
+                rules={[{ required: true }]}
+              >
+                <Select placeholder="Select student attempt status">
+                  <Select.Option value="yes">Yes</Select.Option>
+                  <Select.Option value="no">No</Select.Option>
                 </Select>
               </Form.Item>
             </Col>

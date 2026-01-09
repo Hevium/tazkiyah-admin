@@ -27,6 +27,7 @@ const { Title, Text } = Typography;
 export default function ExamQuestions() {
   const { id: examId } = useParams();
   const navigate = useNavigate();
+  
 
   /* -------------------- STATE -------------------- */
   const [loading, setLoading] = useState(true);
@@ -59,6 +60,7 @@ export default function ExamQuestions() {
     }
   }, [examId]);
 
+  console.log();
   /* -------------------- FETCH QUESTIONS -------------------- */
   const fetchQuestions = useCallback(
     async (page = 1, searchText = "") => {
@@ -170,13 +172,13 @@ export default function ExamQuestions() {
         }
         extra={
           <Space>
-            <Button onClick={() => navigate(-1)}>Back</Button>
-            <Button
+            <Button onClick={() => navigate(`/admin/exams/${examId}/`)}>Back</Button>
+            {exam?.exam_status === "draft" && <Button
               type="primary"
               onClick={() => navigate(`/admin/exams/${examId}/questions/add`)}
             >
               Add Question
-            </Button>
+            </Button>}
           </Space>
         }
       >

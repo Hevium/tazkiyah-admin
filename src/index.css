@@ -1,3 +1,17 @@
+.ant-btn {
+  box-shadow: none !important;
+}
+
+.ant-btn:focus,
+.ant-btn:focus-visible,
+.ant-btn:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+
+
+
 /* Hide mobile bar on desktop */
 .mobile-topbar {
   display: none;
