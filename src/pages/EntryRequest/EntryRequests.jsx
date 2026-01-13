@@ -75,7 +75,7 @@ const EntryRequests = () => {
       render: (_, record) => (
         <>
           <div>{record.reference_title}</div>
-          <Tag>{record.reference_type}</Tag>
+          <Tag  className="text_capitalized">{record.reference_type}</Tag>
         </>
       ),
     },
@@ -106,7 +106,7 @@ const EntryRequests = () => {
             : status === "rejected"
             ? "red"
             : "orange";
-        return <Tag color={color}>{status.toUpperCase()}</Tag>;
+        return <Tag color={color} className="text_capitalized">{status}</Tag>;
       },
     },
     {

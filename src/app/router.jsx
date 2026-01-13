@@ -12,6 +12,8 @@ import ExamView from "../pages/Exams/ExamView";
 import AddQuestion from "../pages/Exams/AddQuestion";
 import ExamQuestions from "../pages/Exams/ExamQuestions";
 import EntryRequests from "../pages/EntryRequest/EntryRequests";
+import EnrollmentByReference from "../pages/Exams/EnrollmentByReference";
+import ExamLeaderboard from "../pages/Exams/ExamLeaderboard";
 
 export const router = createBrowserRouter([
   {
@@ -32,6 +34,8 @@ export const router = createBrowserRouter([
       { path: "/admin/exams/create", element: <ExamCreate /> },
       { path: "/admin/exams/:id", element: <ExamView /> },
       { path: "/admin/exams/:id/questions", element: <ExamQuestions /> },
+      { path: "/admin/exams/:id/enrollments", element: <EnrollmentByReference /> },
+      { path: "/admin/exams/:examId/leaderboard", element: <ExamLeaderboard /> },
       { path: "/admin/entry-requests", element: <EntryRequests /> },
       {
         path: "/admin/exams/:id/questions/add",

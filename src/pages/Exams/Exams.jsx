@@ -83,7 +83,7 @@ const Exams = () => {
       title: "Access",
       dataIndex: "access_type",
       render: (type) =>
-        type === "paid" ? <Tag color="purple">PAID</Tag> : <Tag>FREE</Tag>,
+        type === "paid" ? <Tag color="purple">Paid</Tag> : <Tag>Free</Tag>,
     },
     {
       title: "Exam Fee",
@@ -117,7 +117,7 @@ const Exams = () => {
           published: "green",
           closed: "red",
         };
-        return <Tag color={colorMap[status]}>{status.toUpperCase()}</Tag>;
+        return <Tag color={colorMap[status]} className="text_capitalized">{status}</Tag>;
       },
     },
     {
