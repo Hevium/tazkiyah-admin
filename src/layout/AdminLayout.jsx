@@ -22,8 +22,7 @@ export default function AdminLayout() {
     { key: "/admin/students", icon: <UserOutlined />, label: "Student" },
     { key: "/admin/exams", icon: <FileTextOutlined />, label: "Exam" },
     { key: "/admin/entry-requests", icon: <CheckCircleOutlined />, label: "Request" },
-    { key: "/admin/book", icon: <BookOutlined />, label: "Book" },
-    { key: "/admin/blog", icon: <FileTextOutlined />, label: "Blog" },
+    { key: "/admin/books", icon: <BookOutlined />, label: "Book" },
   ];
   const SidebarMenu = (
     <Menu

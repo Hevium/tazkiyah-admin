@@ -1,7 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
-import Book from "../pages/Book";
 import Blog from "../pages/Blog";
 import AdminLayout from "../layout/AdminLayout";
 import PrivateRoute from "./auth/PrivateRoute";
@@ -14,6 +13,9 @@ import ExamQuestions from "../pages/Exams/ExamQuestions";
 import EntryRequests from "../pages/EntryRequest/EntryRequests";
 import EnrollmentByReference from "../pages/Exams/EnrollmentByReference";
 import ExamLeaderboard from "../pages/Exams/ExamLeaderboard";
+import BookList from "../pages/Book/BookList";
+import AdminBookDetails from "../pages/Book/AdminBookDetails";
+import AdminEditBook from "../pages/Book/AdminEditBook";
 
 export const router = createBrowserRouter([
   {
@@ -41,8 +43,10 @@ export const router = createBrowserRouter([
         path: "/admin/exams/:id/questions/add",
         element: <AddQuestion/>,
       },
-      { path: "/admin/book", element: <Book /> },
-      { path: "/admin/blog", element: <Blog /> },
+      { path: "/admin/books", element: <BookList /> },
+      { path: "/admin/books/:book_id", element: <AdminBookDetails /> },
+      { path: "/admin/books/:book_id/edit", element: <AdminEditBook /> },
+
     ],
   },
 ]);

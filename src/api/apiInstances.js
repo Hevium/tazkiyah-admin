@@ -34,3 +34,10 @@ export const apiDelete = axios.create({
     "x-api-key": "DELETE4ECEBFFE57B7EB1BE31F2CCD66AC7",
   },
 });
+
+export const apiUpload = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    "x-api-key": "POST15949714ABAD2266CFF6CFE3DC752",
+  },
+});
