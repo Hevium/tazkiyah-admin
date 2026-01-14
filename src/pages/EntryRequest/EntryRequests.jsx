@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Table, Tag, Button, Space, Select, message, Card } from "antd";
-import { apiGet, apiPut } from "../../api/apiInstances";
+import { apiGet, apiPost, apiPut } from "../../api/apiInstances";
 import Title from "antd/es/typography/Title";
 
 const { Option } = Select;
@@ -42,9 +42,22 @@ const EntryRequests = () => {
     fetchEntryRequests();
   }, [page, limit, status, referenceType]);
 
+
   /* ================= UPDATE STATUS ================= */
-  const updateStatus = async (id, status) => {
+  const updateStatus = async (id, status, record) => {
     try {
+      const payload = {
+        amount: Math.abs(record?.amount),
+        payment_type: "revenue",
+        transaction_from: "exam",
+        reference: record?.request_id,
+      };
+
+
+      await apiPost.post("/api/admin/transactions", payload);
+
+      message.success("Payment added successfully");
+
       await apiPut.put(`/api/admin/entry-requests/${id}`, { status });
       message.success(`Request ${status}`);
       fetchEntryRequests();
@@ -75,7 +88,7 @@ const EntryRequests = () => {
       render: (_, record) => (
         <>
           <div>{record.reference_title}</div>
-          <Tag>{record.reference_type}</Tag>
+          <Tag className="text_capitalized">{record.reference_type}</Tag>
         </>
       ),
     },
@@ -106,8 +119,17 @@ const EntryRequests = () => {
             : status === "rejected"
             ? "red"
             : "orange";
-        return <Tag color={color}>{status.toUpperCase()}</Tag>;
+        return (
+          <Tag color={color} className="text_capitalized">
+            {status}
+          </Tag>
+        );
       },
+    },
+    {
+      title: "Transaction Received",
+      dataIndex: "transaction_amount_sum",
+      render: (amount) => amount > 0 ? amount : "N/A"
     },
     {
       title: "Action",
@@ -119,7 +141,7 @@ const EntryRequests = () => {
                 type="primary"
                 size="small"
                 disabled={record.status === "approved"}
-                onClick={() => updateStatus(record._id, "approved")}
+                onClick={() => updateStatus(record._id, "approved", record)}
               >
                 Approve
               </Button>
@@ -141,7 +163,7 @@ const EntryRequests = () => {
   ];
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 16 }}>
       {/* Page Title */}
       <Title level={4} style={{ marginBottom: 16 }}>
         Request Management

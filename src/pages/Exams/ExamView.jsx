@@ -18,8 +18,10 @@ import { apiDelete, apiGet, apiPut } from "../../api/apiInstances";
 import EditExamModal from "../../components/EditExamModal";
 import {
   BulbOutlined,
+  CheckCircleOutlined,
   DeleteOutlined,
   EditOutlined,
+  LineChartOutlined,
   PlusOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
@@ -49,7 +51,6 @@ const ExamView = () => {
       setLoading(false);
     }
   }, [id]);
-
 
   useEffect(() => {
     fetchExam();
@@ -259,9 +260,14 @@ const ExamView = () => {
           <Col>
             <h2 style={{ marginBottom: 4 }}>{exam.exam_title}</h2>
             <Space>
-              <Tag color="blue">{exam.exam_status.toUpperCase()}</Tag>
-              <Tag color={exam.access_type === "paid" ? "gold" : "green"}>
-                {exam.access_type.toUpperCase()}
+              <Tag color="blue" className="text_capitalized">
+                {exam.exam_status}
+              </Tag>
+              <Tag
+                color={exam.access_type === "paid" ? "gold" : "green"}
+                className="text_capitalized"
+              >
+                {exam.access_type}
               </Tag>
               {exam.access_type === "paid" && <Tag>৳ {exam.price}</Tag>}
             </Space>
@@ -272,7 +278,16 @@ const ExamView = () => {
               <Button onClick={() => setEditOpen(true)}>
                 <EditOutlined /> Edit Exam
               </Button>
-
+              <Button
+                onClick={() => navigate(`/admin/exams/${id}/enrollments`)}
+              >
+                <CheckCircleOutlined /> View Enrollment
+              </Button>
+                <Button
+                  onClick={() => navigate(`/admin/exams/${id}/leaderboard`)}
+                >
+                  <LineChartOutlined /> View Leaderboard
+                </Button>
               <Button
                 type="primary"
                 onClick={() => navigate(`/admin/exams/${id}/questions`)}

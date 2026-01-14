@@ -9,6 +9,10 @@
   box-shadow: none !important;
 }
 
+.text_capitalized {
+  text-transform: capitalize;
+}
+
 
 
 

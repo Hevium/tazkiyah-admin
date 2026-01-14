@@ -66,7 +66,6 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
       registration_end_datetime: values.registration_end_datetime
         ? values.registration_end_datetime.toISOString()
         : null,
-      
     };
 
     if (!payload.settings?.negative_marking?.enabled) {
@@ -76,8 +75,8 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
     if (payload.access_type !== "paid") {
       payload.price = 0;
     }
-    if(examData?.exam_content?.exam_banner){
-      payload.exam_content.exam_banner = examData.exam_content.exam_banner
+    if (examData?.exam_content?.exam_banner) {
+      payload.exam_content.exam_banner = examData.exam_content.exam_banner;
     }
 
     try {
@@ -277,6 +276,19 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
 
             <Col span={8}>
               <Form.Item
+                label="Available for Attempt"
+                name="attempt_status"
+                rules={[{ required: true }]}
+              >
+                <Select placeholder="Select student attempt status">
+                  <Select.Option value="yes">Yes</Select.Option>
+                  <Select.Option value="no">No</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+
+            <Col span={8}>
+              <Form.Item
                 label="Result Status"
                 name="result_status"
                 rules={[{ required: true }]}
@@ -287,15 +299,18 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
                 </Select>
               </Form.Item>
             </Col>
+            
+            
+
             <Col span={8}>
               <Form.Item
-                label="Available for Attempt"
-                name="attempt_status"
+                label="Leaderboard Status"
+                name="leaderboard_status"
                 rules={[{ required: true }]}
               >
-                <Select placeholder="Select student attempt status">
-                  <Select.Option value="yes">Yes</Select.Option>
-                  <Select.Option value="no">No</Select.Option>
+                <Select>
+                  <Select.Option value="hidden">Hidden</Select.Option>
+                  <Select.Option value="published">Published</Select.Option>
                 </Select>
               </Form.Item>
             </Col>
