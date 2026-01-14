@@ -16,6 +16,9 @@ import ExamLeaderboard from "../pages/Exams/ExamLeaderboard";
 import BookList from "../pages/Book/BookList";
 import AdminBookDetails from "../pages/Book/AdminBookDetails";
 import AdminEditBook from "../pages/Book/AdminEditBook";
+import AdminOrders from "../pages/Exams/AdminOrders";
+import AdminOrderDetails from "../pages/Exams/AdminOrderDetails";
+import CapitalPage from "../pages/Exams/CapitalPage";
 
 export const router = createBrowserRouter([
   {
@@ -46,7 +49,10 @@ export const router = createBrowserRouter([
       { path: "/admin/books", element: <BookList /> },
       { path: "/admin/books/:book_id", element: <AdminBookDetails /> },
       { path: "/admin/books/:book_id/edit", element: <AdminEditBook /> },
-
+      
+      { path: "/admin/orders", element: <AdminOrders /> },
+      { path: "/admin/orders/:orderId", element: <AdminOrderDetails /> },
+      { path: "/admin/capitals", element: <CapitalPage /> },
     ],
   },
 ]);

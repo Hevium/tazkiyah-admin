@@ -6,6 +6,8 @@ import {
   FileTextOutlined,
   BookOutlined,
   CheckCircleOutlined,
+  ClockCircleOutlined,
+  LineChartOutlined,
 } from "@ant-design/icons";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -21,8 +23,10 @@ export default function AdminLayout() {
     { key: "/", icon: <DashboardOutlined />, label: "Dashboard" },
     { key: "/admin/students", icon: <UserOutlined />, label: "Student" },
     { key: "/admin/exams", icon: <FileTextOutlined />, label: "Exam" },
-    { key: "/admin/entry-requests", icon: <CheckCircleOutlined />, label: "Request" },
     { key: "/admin/books", icon: <BookOutlined />, label: "Book" },
+    { key: "/admin/orders", icon: <ClockCircleOutlined />, label: "Order" },
+    { key: "/admin/entry-requests", icon: <CheckCircleOutlined />, label: "Request" },
+    { key: "/admin/capitals", icon: <LineChartOutlined />, label: "Capital" },
   ];
   const SidebarMenu = (
     <Menu
