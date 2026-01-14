@@ -122,7 +122,7 @@ const StudentsList = () => {
   ];
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 16 }}>
       {/* Page Title */}
       <Title level={4} style={{ marginBottom: 16 }}>
         Student Management

@@ -43,8 +43,6 @@ const EntryRequests = () => {
   }, [page, limit, status, referenceType]);
 
 
-  console.log(data)
-
   /* ================= UPDATE STATUS ================= */
   const updateStatus = async (id, status, record) => {
     try {
@@ -165,7 +163,7 @@ const EntryRequests = () => {
   ];
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 16 }}>
       {/* Page Title */}
       <Title level={4} style={{ marginBottom: 16 }}>
         Request Management

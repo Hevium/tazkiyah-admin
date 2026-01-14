@@ -130,12 +130,11 @@ const AdminEditBook = () => {
       const formData = new FormData();
       formData.append("thumbnail", thumbnailFile);
 
-      const res = await apiUpload.post(
+      await apiUpload.post(
         `/api/admin/books/${book_id}/thumbnail`,
         formData
       );
 
-      console.log("Thumbnail upload response:", res.data);
 
       message.success("Thumbnail updated");
       setThumbnailFile(null);
@@ -176,7 +175,7 @@ const AdminEditBook = () => {
   if (!book) return null;
 
   return (
-    <div style={{ padding: 24 }}>
+    <div style={{ padding: 16 }}>
       <Button
         icon={<ArrowLeftOutlined />}
         onClick={() => navigate(-1)}

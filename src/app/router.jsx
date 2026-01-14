@@ -19,6 +19,8 @@ import AdminEditBook from "../pages/Book/AdminEditBook";
 import AdminOrders from "../pages/Exams/AdminOrders";
 import AdminOrderDetails from "../pages/Exams/AdminOrderDetails";
 import CapitalPage from "../pages/Exams/CapitalPage";
+import ExamResult from "../pages/Exams/ExamResult";
+import SmsHistory from "../pages/SmsHistory";
 
 export const router = createBrowserRouter([
   {
@@ -41,6 +43,7 @@ export const router = createBrowserRouter([
       { path: "/admin/exams/:id/questions", element: <ExamQuestions /> },
       { path: "/admin/exams/:id/enrollments", element: <EnrollmentByReference /> },
       { path: "/admin/exams/:examId/leaderboard", element: <ExamLeaderboard /> },
+      { path: "/admin/exams/submittion/:attemptId", element: <ExamResult /> },
       { path: "/admin/entry-requests", element: <EntryRequests /> },
       {
         path: "/admin/exams/:id/questions/add",
@@ -53,6 +56,7 @@ export const router = createBrowserRouter([
       { path: "/admin/orders", element: <AdminOrders /> },
       { path: "/admin/orders/:orderId", element: <AdminOrderDetails /> },
       { path: "/admin/capitals", element: <CapitalPage /> },
+      { path: "/admin/sms", element: <SmsHistory /> },
     ],
   },
 ]);

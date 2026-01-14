@@ -52,7 +52,7 @@ const AdminBookDetails = () => {
 
   if (loading) {
     return (
-      <div style={{ padding: 60, textAlign: "center" }}>
+      <div style={{ padding: 16, textAlign: "center" }}>
         <Spin size="large" />
       </div>
     );
@@ -63,7 +63,7 @@ const AdminBookDetails = () => {
   const netPrice = (book.price || 0) - (book.discount || 0);
 
   return (
-    <div style={{ padding: 24 }}>
+    <div style={{ padding: 16 }}>
       {/* HEADER */}
       <Space style={{ marginBottom: 16 }}>
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>

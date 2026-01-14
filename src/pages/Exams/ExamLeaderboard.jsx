@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Table, Typography, Select, Space } from "antd";
+import { useNavigate, useParams } from "react-router-dom";
+import { Table, Typography, Select, Space, Button } from "antd";
 import { apiGet } from "../../api/apiInstances";
+import { EyeOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -27,6 +28,7 @@ const ExamLeaderboard = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [total, setTotal] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!examId) return;
@@ -37,12 +39,9 @@ const ExamLeaderboard = () => {
     try {
       setLoading(true);
 
-      const res = await apiGet.get(
-        `/api/exams/leaderboard/${examId}`,
-        {
-          params: { page, limit },
-        }
-      );
+      const res = await apiGet.get(`/api/exams/leaderboard/${examId}`, {
+        params: { page, limit },
+      });
 
       if (res.data?.success) {
         setData(res.data.data);
@@ -115,6 +114,17 @@ const ExamLeaderboard = () => {
       key: "time_for_submission_sec",
       align: "center",
       render: (value) => formatTime(value),
+    },
+    {
+      title: "Actions",
+      render: (_, record) => (
+        <Button
+          type="link"
+          onClick={() => navigate(`/admin/exams/submittion/${record._id}`)}
+        >
+          <EyeOutlined />
+        </Button>
+      ),
     },
   ];
 

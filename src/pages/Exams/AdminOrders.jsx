@@ -152,7 +152,7 @@ const AdminOrders = () => {
 
   return (
     <div style={{padding: 16}}>
-      <Title level={3}>All Orders</Title>
+      <Title level={4}>Orders Management</Title>
 
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16}>

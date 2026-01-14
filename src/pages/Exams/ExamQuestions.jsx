@@ -59,8 +59,6 @@ export default function ExamQuestions() {
       console.error(err);
     }
   }, [examId]);
-
-  console.log();
   /* -------------------- FETCH QUESTIONS -------------------- */
   const fetchQuestions = useCallback(
     async (page = 1, searchText = "") => {
@@ -160,7 +158,7 @@ export default function ExamQuestions() {
 
   /* -------------------- UI -------------------- */
   return (
-    <div style={{ padding: 24 }}>
+    <div style={{ padding: 16 }}>
       <Card
         title={
           <>

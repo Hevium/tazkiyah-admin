@@ -31,7 +31,7 @@ export default function Login() {
             name="email"
             rules={[{ required: true, type: "email" }]}
           >
-            <Input />
+            <Input placeholder="Enter Email"/>
           </Form.Item>
 
           <Form.Item
@@ -39,7 +39,7 @@ export default function Login() {
             name="password"
             rules={[{ required: true }]}
           >
-            <Input.Password />
+            <Input.Password placeholder="Enter Password" />
           </Form.Item>
 
           <Button type="primary" htmlType="submit" block>

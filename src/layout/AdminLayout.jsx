@@ -1,13 +1,14 @@
 import { Layout, Menu, Drawer, Button } from "antd";
 import {
   MenuOutlined,
-  DashboardOutlined,
   UserOutlined,
   FileTextOutlined,
   BookOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
   LineChartOutlined,
+  CommentOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -20,13 +21,14 @@ export default function AdminLayout() {
   const location = useLocation();
 
   const menuItems = [
-    { key: "/", icon: <DashboardOutlined />, label: "Dashboard" },
+    { key: "/", icon: <AppstoreOutlined />, label: "Dashboard" },
     { key: "/admin/students", icon: <UserOutlined />, label: "Student" },
     { key: "/admin/exams", icon: <FileTextOutlined />, label: "Exam" },
     { key: "/admin/books", icon: <BookOutlined />, label: "Book" },
     { key: "/admin/orders", icon: <ClockCircleOutlined />, label: "Order" },
     { key: "/admin/entry-requests", icon: <CheckCircleOutlined />, label: "Request" },
     { key: "/admin/capitals", icon: <LineChartOutlined />, label: "Capital" },
+    { key: "/admin/sms", icon: <CommentOutlined />, label: "SMS" },
   ];
   const SidebarMenu = (
     <Menu

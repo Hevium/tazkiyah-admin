@@ -12,6 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { apiGet } from "../../api/apiInstances";
 import { Typography } from "antd";
+import { EyeOutlined, PlusOutlined } from "@ant-design/icons";
 
 const { Search } = Input;
 const { Title } = Typography;
@@ -125,10 +126,10 @@ const Exams = () => {
       render: (_, record) => (
         <Space>
           <Button
-            size="small"
+            type="link"
             onClick={() => navigate(`/admin/exams/${record.exam_id}`)}
           >
-            View
+            <EyeOutlined />
           </Button>
 
         </Space>
@@ -138,7 +139,7 @@ const Exams = () => {
 
   // ================== Render ==================
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 16 }}>
       {/* Page Title */}
       <Title level={4} style={{ marginBottom: 16 }}>
         Exam Management
@@ -170,7 +171,7 @@ const Exams = () => {
         </Select>
 
         <Button type="primary" onClick={() => navigate("/admin/exams/create")}>
-          Create Exam
+          <PlusOutlined /> Create Exam
         </Button>
       </Space>
 

@@ -96,7 +96,7 @@ const CapitalPage = () => {
 
   return (
     <div style={{ padding: 16 }}>
-      <Title level={3}>Capital Management</Title>
+      <Title level={4} style={{marginBottom: 16}}>Capital Management</Title>
 
       <Space style={{ marginBottom: 16 }} wrap>
         <Input
