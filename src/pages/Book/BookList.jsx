@@ -18,7 +18,7 @@ const BookList = () => {
   const [searchText, setSearchText] = useState("");
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const BASE_URL = "http://localhost:5000";
+  const BASE_URL = "https://api.attazkiyah.org";
 
   const fetchBooks = async (page = 1, limit = 10, search = "") => {
     try {

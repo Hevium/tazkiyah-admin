@@ -21,7 +21,7 @@ import { apiGet } from "../../api/apiInstances";
 
 const { Title, Text, Paragraph } = Typography;
 
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = "https://api.attazkiyah.org";
 
 const DEFAULT_THUMBNAIL =
   "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80";
