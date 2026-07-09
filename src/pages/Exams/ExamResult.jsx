@@ -9,6 +9,7 @@ import {
   Space,
   Divider,
 } from "antd";
+import { Tag } from "antd";
 import { apiGet } from "../../api/apiInstances";
 
 const { Title, Text, Paragraph } = Typography;
@@ -50,7 +51,7 @@ const ExamResult = () => {
           title="Result Not Published Yet"
           subTitle="This exam result has not been published yet. Once published, you will be able to see your marks and detailed result here."
           extra={
-            <Button type="primary" onClick={() => navigate("/exam/enroll")}>
+            <Button type="primary" onClick={() => navigate("/admin/exams")}>
               Back to Exams
             </Button>
           }
@@ -82,63 +83,81 @@ const ExamResult = () => {
         {/* Questions */}
         {data.questions.map((q, index) => (
           <Card key={q.question_id} style={{ marginBottom: 20 }}>
-            <Title level={5}>
-              Q{index + 1}.{" "}
-              <span style={{ fontSize: 20 }} className="kalpurush_font">
-                {q.title}
-              </span>
-            </Title>
+  <Title level={5}>
+    Q{index + 1}.{" "}
+    <span style={{ fontSize: 20 }} className="kalpurush_font">
+      {q.title}
+    </span>
+  </Title>
 
-            <Space direction="vertical" style={{ width: "100%" }}>
-              {Object.entries(q.options).map(([key, value]) => {
-                const isCorrect = key === q.correct;
-                const isSelected = key === q.selected;
+  {/* Question Status */}
+  <div style={{ marginBottom: 16 }}>
+    {q.selected === null ? (
+      <Tag color="gold" style={{ fontSize: 14, padding: "4px 10px" }}>
+        Skipped
+      </Tag>
+    ) : q.is_correct ? (
+      <Tag color="success" style={{ fontSize: 14, padding: "4px 10px" }}>
+        Correct
+      </Tag>
+    ) : (
+      <Tag color="error" style={{ fontSize: 14, padding: "4px 10px" }}>
+        Wrong
+      </Tag>
+    )}
+  </div>
 
-                let bg = "#fff";
-                let border = "#e5e7eb";
+  <Space direction="vertical" style={{ width: "100%" }}>
+    {Object.entries(q.options).map(([key, value]) => {
+      const isCorrect = key === q.correct;
+      const isSelected = key === q.selected;
 
-                if (isCorrect) {
-                  bg = "#f6ffed";
-                  border = "#52c41a";
-                } else if (isSelected && !isCorrect) {
-                  bg = "#fff1f0";
-                  border = "#ff4d4f";
-                }
+      let bg = "#fff";
+      let border = "#e5e7eb";
 
-                return (
-                  <div
-                    key={key}
-                    style={{
-                      padding: "10px 14px",
-                      borderRadius: 10,
-                      border: `1px solid ${border}`,
-                      background: bg,
-                    }}
-                  >
-                    <strong>{key.toUpperCase()}.</strong>{" "}
-                    <span className="kalpurush_font">{value}</span>
-                  </div>
-                );
-              })}
-            </Space>
+      if (isCorrect) {
+        bg = "#f6ffed";
+        border = "#52c41a";
+      } else if (isSelected && !isCorrect) {
+        bg = "#fff1f0";
+        border = "#ff4d4f";
+      }
 
-            {/* Explanation */}
-            <Divider />
-            <Paragraph>
-              <strong>Explanation:</strong>
-            </Paragraph>
-            <div
-              className="kalpurush_font"
-              dangerouslySetInnerHTML={{
-                __html: q.explanation,
-              }}
-            />
-          </Card>
+      return (
+        <div
+          key={key}
+          style={{
+            padding: "10px 14px",
+            borderRadius: 10,
+            border: `1px solid ${border}`,
+            background: bg,
+          }}
+        >
+          <strong>{key.toUpperCase()}.</strong>{" "}
+          <span className="kalpurush_font">{value}</span>
+        </div>
+      );
+    })}
+  </Space>
+
+  <Divider />
+
+  <Paragraph>
+    <strong>Explanation:</strong>
+  </Paragraph>
+
+  <div
+    className="kalpurush_font"
+    dangerouslySetInnerHTML={{
+      __html: q.explanation,
+    }}
+  />
+</Card>
         ))}
 
         <Divider />
 
-        <Button type="primary" onClick={() => navigate("/exam/enroll")}>
+        <Button type="primary" onClick={() => navigate("/admin/exams")}>
           Back to Exams
         </Button>
       </div>

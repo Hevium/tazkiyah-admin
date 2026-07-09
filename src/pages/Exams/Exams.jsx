@@ -5,13 +5,14 @@ import {
   Button,
   Space,
   message,
-  Popconfirm,
   Input,
   Select,
+  Typography,
+  Row,
+  Col,
 } from "antd";
 import { useNavigate } from "react-router-dom";
 import { apiGet } from "../../api/apiInstances";
-import { Typography } from "antd";
 import { EyeOutlined, PlusOutlined } from "@ant-design/icons";
 
 const { Search } = Input;
@@ -78,108 +79,162 @@ const Exams = () => {
     {
       title: "Exam Title",
       dataIndex: "exam_title",
+      width: 260,
     },
-   
     {
       title: "Access",
       dataIndex: "access_type",
+      width: 100,
+      align: "center",
       render: (type) =>
-        type === "paid" ? <Tag color="purple">Paid</Tag> : <Tag>Free</Tag>,
+        type === "paid" ? (
+          <Tag color="purple">Paid</Tag>
+        ) : (
+          <Tag color="default">Free</Tag>
+        ),
     },
     {
       title: "Exam Fee",
       dataIndex: "price",
+      width: 110,
+      align: "center",
       render: (price) => (price ? `৳ ${price}` : "৳ 0"),
     },
     {
-      title: "Total Questions",
-      dataIndex: "total_question"
+      title: "Questions",
+      dataIndex: "total_question",
+      width: 100,
+      align: "center",
     },
-    
     {
       title: "Duration",
       dataIndex: "duration_minutes",
+      width: 100,
+      align: "center",
       render: (v) => `${v} min`,
     },
     {
       title: "Marks",
       dataIndex: "total_marks",
+      width: 90,
+      align: "center",
     },
     {
-      title: "Total Enrollments",
+      title: "Enrollments",
       dataIndex: "total_marks",
+      width: 120,
+      align: "center",
     },
-     {
+    {
       title: "Status",
       dataIndex: "exam_status",
+      width: 120,
+      align: "center",
       render: (status) => {
         const colorMap = {
           draft: "default",
           published: "green",
           closed: "red",
         };
-        return <Tag color={colorMap[status]} className="text_capitalized">{status}</Tag>;
+
+        return (
+          <Tag color={colorMap[status]} className="text_capitalized">
+            {status}
+          </Tag>
+        );
       },
     },
     {
       title: "Actions",
+      width: 80,
+      align: "center",
       render: (_, record) => (
-        <Space>
-          <Button
-            type="link"
-            onClick={() => navigate(`/admin/exams/${record.exam_id}`)}
-          >
-            <EyeOutlined />
-          </Button>
-
-        </Space>
+        <Button
+          type="link"
+          onClick={() => navigate(`/admin/exams/${record.exam_id}`)}
+        >
+          <EyeOutlined />
+        </Button>
       ),
     },
   ];
 
-  // ================== Render ==================
   return (
-    <div style={{ padding: 16 }}>
-      {/* Page Title */}
-      <Title level={4} style={{ marginBottom: 16 }}>
-        Exam Management
-      </Title>
-
+    <div
+      style={{
+        padding: 16,
+        width: "100%",
+        overflow: "hidden",
+      }}
+    >
       {contextHolder}
-      <Space style={{ marginBottom: 16 }}>
-        <Search
-          placeholder="Search exam"
-          onSearch={(value) => {
-            setSearch(value);
-            fetchExams(1, pagination.pageSize, value, status);
-          }}
-          allowClear
-        />
 
-        <Select
-          value={status}
-          onChange={(value) => {
-            setStatus(value);
-            fetchExams(1, pagination.pageSize, search, value);
-          }}
-          style={{ width: 160 }}
-        >
-          <Select.Option value="all">All Status</Select.Option>
-          <Select.Option value="draft">Draft</Select.Option>
-          <Select.Option value="published">Published</Select.Option>
-          <Select.Option value="closed">Closed</Select.Option>
-        </Select>
+      {/* Header */}
+      <Row
+        gutter={[16, 16]}
+        justify="space-between"
+        align="middle"
+        style={{ marginBottom: 16 }}
+      >
+        <Col xs={24} md={8}>
+          <Title level={4} style={{ margin: 0 }}>
+            Exam Management
+          </Title>
+        </Col>
 
-        <Button type="primary" onClick={() => navigate("/admin/exams/create")}>
-          <PlusOutlined /> Create Exam
-        </Button>
-      </Space>
+        <Col xs={24} md={16}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <Search
+              placeholder="Search exam"
+              allowClear
+              style={{ width: 250, maxWidth: "100%" }}
+              onSearch={(value) => {
+                setSearch(value);
+                fetchExams(1, pagination.pageSize, value, status);
+              }}
+            />
 
+            <Select
+              value={status}
+              style={{ width: 160 }}
+              onChange={(value) => {
+                setStatus(value);
+                fetchExams(1, pagination.pageSize, search, value);
+              }}
+            >
+              <Select.Option value="all">All Status</Select.Option>
+              <Select.Option value="draft">Draft</Select.Option>
+              <Select.Option value="published">Published</Select.Option>
+              <Select.Option value="closed">Closed</Select.Option>
+            </Select>
+
+            <Button
+              type="primary"
+              onClick={() => navigate("/admin/exams/create")}
+            >
+              <PlusOutlined />
+              Create Exam
+            </Button>
+          </div>
+        </Col>
+      </Row>
+
+      {/* Table */}
       <Table
         rowKey="_id"
         columns={columns}
         dataSource={exams}
         loading={loading}
+        bordered
+        scroll={{ x: 1200 }}
         pagination={{
           current: pagination.current,
           pageSize: pagination.pageSize,

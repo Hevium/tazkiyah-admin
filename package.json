@@ -21,6 +21,9 @@
     "antd": "^6.1.1",
     "axios": "^1.13.2",
     "firebase": "^12.7.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "moment": "^2.30.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.11.0"
