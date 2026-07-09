@@ -11,6 +11,7 @@ import {
   FallOutlined,
   WalletOutlined,
   LogoutOutlined,
+  LineChartOutlined,
 } from "@ant-design/icons";
 import { apiGet } from "../api/apiInstances";
 import { AuthContext } from "../app/auth/AuthContext";
@@ -131,7 +132,7 @@ const Dashboard = () => {
             <Statistic
               title="Investment"
               value={dashboardData.total_investment}
-              prefix={<DollarOutlined />}
+              prefix={<LineChartOutlined />}
               suffix="৳"
             />
           </Card>

@@ -61,7 +61,8 @@ const EntryRequests = () => {
       await apiPut.put(`/api/admin/entry-requests/${id}`, { status });
       message.success(`Request ${status}`);
       fetchEntryRequests();
-    } catch {
+    } catch (error) {
+      console.log(error)
       message.error("Failed to update status");
     }
   };
@@ -149,7 +150,7 @@ const EntryRequests = () => {
                 danger
                 size="small"
                 disabled={record.status === "rejected"}
-                onClick={() => updateStatus(record._id, "rejected")}
+                onClick={() => updateStatus(record._id, "rejected", record)}
               >
                 Reject
               </Button>
