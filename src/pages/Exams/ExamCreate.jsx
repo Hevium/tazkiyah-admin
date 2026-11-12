@@ -23,7 +23,7 @@ const ExamCreate = () => {
   const accessType = Form.useWatch("access_type", form);
   const negativeEnabled = Form.useWatch(
     ["settings", "negative_marking", "enabled"],
-    form
+    form,
   );
 
   const onFinish = async (values) => {
@@ -42,7 +42,7 @@ const ExamCreate = () => {
     } catch (error) {
       messageApi.error(
         error?.response?.data?.message ||
-          "Failed to create exam. Please try again."
+          "Failed to create exam. Please try again.",
       );
     }
   };
@@ -54,6 +54,7 @@ const ExamCreate = () => {
       onFinish={onFinish}
       initialValues={{
         access_type: "free",
+        security_control: false,
         settings: {
           shuffle_questions: false,
           negative_marking: {
@@ -194,33 +195,59 @@ const ExamCreate = () => {
 
       {/* ================= SETTINGS ================= */}
       <Card title="Exam Settings" style={{ marginBottom: 24 }}>
-        <Space size="large">
-          <Form.Item
-            label="Shuffle Questions"
-            name={["settings", "shuffle_questions"]}
-            valuePropName="checked"
-          >
-            <Switch />
-          </Form.Item>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={8}>
+            <Card size="small">
+              <Form.Item
+                label="Shuffle Questions"
+                name={["settings", "shuffle_questions"]}
+                valuePropName="checked"
+                style={{ marginBottom: 0 }}
+              >
+                <Switch />
+              </Form.Item>
+            </Card>
+          </Col>
 
-          <Form.Item
-            label="Negative Marking"
-            name={["settings", "negative_marking", "enabled"]}
-            valuePropName="checked"
-          >
-            <Switch />
-          </Form.Item>
+          <Col xs={24} sm={12} md={8}>
+            <Card size="small">
+              <Form.Item
+                label="Security Control"
+                name="security_control"
+                valuePropName="checked"
+                tooltip="Enable anti-cheating protections during the exam."
+                extra="May prevent tab switching, copying, and other restricted actions."
+                style={{ marginBottom: 0 }}
+              >
+                <Switch checkedChildren="ON" unCheckedChildren="OFF" />
+              </Form.Item>
+            </Card>
+          </Col>
 
-          {negativeEnabled && (
-            <Form.Item
-              label="Negative Mark per Wrong Answer"
-              name={["settings", "negative_marking", "per_question"]}
-              extra="This mark will be deducted for each wrong answer"
-            >
-              <InputNumber min={0} step={0.25} />
-            </Form.Item>
-          )}
-        </Space>
+          <Col xs={24} sm={12} md={8}>
+            <Card size="small">
+              <Form.Item
+                label="Negative Marking"
+                name={["settings", "negative_marking", "enabled"]}
+                valuePropName="checked"
+                style={{ marginBottom: 0 }}
+              >
+                <Switch />
+              </Form.Item>
+
+              {negativeEnabled && (
+                <Form.Item
+                  style={{ marginTop: 16, marginBottom: 0 }}
+                  label="Negative Mark"
+                  name={["settings", "negative_marking", "per_question"]}
+                  extra="Deducted for every wrong answer"
+                >
+                  <InputNumber min={0} step={0.25} style={{ width: "100%" }} />
+                </Form.Item>
+              )}
+            </Card>
+          </Col>
+        </Row>
       </Card>
 
       {/* ================= ACCESS ================= */}
@@ -265,7 +292,11 @@ const ExamCreate = () => {
           textAlign: "right",
         }}
       >
-        <Button size="large" style={{ marginRight: 8 }}>
+        <Button
+          size="large"
+          style={{ marginRight: 8 }}
+          onClick={() => navigate("/admin/exams")}
+        >
           Cancel
         </Button>
         <Button type="primary" size="large" htmlType="submit">

@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  Card,
-  Spin,
-  Result,
-  Button,
-  Typography,
-  Space,
-  Divider,
-} from "antd";
+import { Card, Spin, Result, Button, Typography, Space, Divider, Alert } from "antd";
 import { Tag } from "antd";
 import { apiGet } from "../../api/apiInstances";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import { WarningOutlined } from "@ant-design/icons";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -76,83 +75,122 @@ const ExamResult = () => {
             </Text>
             {data?.leaderboard_status == "published" ? (
               <Text strong>Merit Position: {data?.merit_position}</Text>
-            ) : <Text style={{color: "green"}}>Merit List not published yet.</Text>}
+            ) : (
+              <Text style={{ color: "green" }}>
+                Merit List not published yet.
+              </Text>
+            )}
           </Space>
         </Card>
+
+        {data?.security_note && (
+          <Alert
+            style={{
+              marginTop: 20,
+              marginBottom: 20,
+              borderRadius: 10,
+            }}
+            type="error"
+            showIcon
+            icon={<WarningOutlined />}
+            message="Security Notice"
+            description={
+              <div className="kalpurush_font">
+                <div style={{ marginBottom: 8 }}>{data.security_note}</div>
+
+                <Text type="secondary">
+                  Auto submitted on{" "}
+                  <strong>
+                    {dayjs(data.submitted_at)
+                      .tz("Asia/Dhaka")
+                      .format("DD MMMM YYYY, hh:mm:ss A")}
+                  </strong>{" "}
+                  (Bangladesh Time)
+                </Text>
+              </div>
+            }
+          />
+        )}
 
         {/* Questions */}
         {data.questions.map((q, index) => (
           <Card key={q.question_id} style={{ marginBottom: 20 }}>
-  <Title level={5}>
-    Q{index + 1}.{" "}
-    <span style={{ fontSize: 20 }} className="kalpurush_font">
-      {q.title}
-    </span>
-  </Title>
+            <Title level={5}>
+              Q{index + 1}.{" "}
+              <span style={{ fontSize: 20 }} className="kalpurush_font">
+                {q.title}
+              </span>
+            </Title>
 
-  {/* Question Status */}
-  <div style={{ marginBottom: 16 }}>
-    {q.selected === null ? (
-      <Tag color="gold" style={{ fontSize: 14, padding: "4px 10px" }}>
-        Skipped
-      </Tag>
-    ) : q.is_correct ? (
-      <Tag color="success" style={{ fontSize: 14, padding: "4px 10px" }}>
-        Correct
-      </Tag>
-    ) : (
-      <Tag color="error" style={{ fontSize: 14, padding: "4px 10px" }}>
-        Wrong
-      </Tag>
-    )}
-  </div>
+            {/* Question Status */}
+            <div style={{ marginBottom: 16 }}>
+              {q.selected === null ? (
+                <Tag color="gold" style={{ fontSize: 14, padding: "4px 10px" }}>
+                  Skipped
+                </Tag>
+              ) : q.is_correct ? (
+                <Tag
+                  color="success"
+                  style={{ fontSize: 14, padding: "4px 10px" }}
+                >
+                  Correct
+                </Tag>
+              ) : (
+                <Tag
+                  color="error"
+                  style={{ fontSize: 14, padding: "4px 10px" }}
+                >
+                  Wrong
+                </Tag>
+              )}
+            </div>
 
-  <Space direction="vertical" style={{ width: "100%" }}>
-    {Object.entries(q.options).map(([key, value]) => {
-      const isCorrect = key === q.correct;
-      const isSelected = key === q.selected;
+            <Space direction="vertical" style={{ width: "100%" }}>
+              {Object.entries(q.options).map(([key, value]) => {
+                const isCorrect = key === q.correct;
+                const isSelected = key === q.selected;
 
-      let bg = "#fff";
-      let border = "#e5e7eb";
+                let bg = "#fff";
+                let border = "#e5e7eb";
 
-      if (isCorrect) {
-        bg = "#f6ffed";
-        border = "#52c41a";
-      } else if (isSelected && !isCorrect) {
-        bg = "#fff1f0";
-        border = "#ff4d4f";
-      }
+                if (isCorrect) {
+                  bg = "#f6ffed";
+                  border = "#52c41a";
+                } else if (isSelected && !isCorrect) {
+                  bg = "#fff1f0";
+                  border = "#ff4d4f";
+                }
 
-      return (
-        <div
-          key={key}
-          style={{
-            padding: "10px 14px",
-            borderRadius: 10,
-            border: `1px solid ${border}`,
-            background: bg,
-          }}
-        >
-          <strong>{key.toUpperCase()}.</strong>{" "}
-          <span className="kalpurush_font">{value}</span>
-        </div>
-      );
-    })}
-  </Space>
+                return (
+                  <div
+                    key={key}
+                    style={{
+                      padding: "10px 14px",
+                      borderRadius: 10,
+                      border: `1px solid ${border}`,
+                      background: bg,
+                    }}
+                  >
+                    <strong>{key.toUpperCase()}.</strong>{" "}
+                    <span className="kalpurush_font">{value}</span>
+                  </div>
+                );
+              })}
+            </Space>
 
-  <Divider />
+            <Divider />
 
-  <Paragraph>
-    <strong>Explanation:</strong>
-  </Paragraph>
+            <Paragraph>
+              <strong>Explanation:</strong>
+            </Paragraph>
 
-  <div
-    className="kalpurush_font"
-    dangerouslySetInnerHTML={{
-      __html: q.explanation,
-    }}
-  />
-</Card>
+            <div
+              className="kalpurush_font"
+              dangerouslySetInnerHTML={{
+                __html: q.explanation,
+              }}
+            />
+          </Card>
         ))}
 
         <Divider />

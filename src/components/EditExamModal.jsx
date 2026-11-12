@@ -24,7 +24,7 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
   const accessType = Form.useWatch("access_type", form);
   const negativeEnabled = Form.useWatch(
     ["settings", "negative_marking", "enabled"],
-    form
+    form,
   );
   const [examData, setExamData] = useState({});
 
@@ -92,7 +92,7 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
       });
     } catch (error) {
       messageApi.error(
-        error?.response?.data?.message || "Failed to update exam"
+        error?.response?.data?.message || "Failed to update exam",
       );
     }
   };
@@ -202,13 +202,22 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
           </Row>
 
           {/* ===== SETTINGS ===== */}
-          <Space size="large" wrap>
+          <Space size="large" wrap align="start">
             <Form.Item
               label="Shuffle Questions"
               name={["settings", "shuffle_questions"]}
               valuePropName="checked"
             >
               <Switch />
+            </Form.Item>
+
+            <Form.Item
+              label="Security Control"
+              name="security_control"
+              valuePropName="checked"
+              tooltip="Enable anti-cheating protections during the exam."
+            >
+              <Switch checkedChildren="ON" unCheckedChildren="OFF" />
             </Form.Item>
 
             <Form.Item
@@ -223,9 +232,15 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
               <Form.Item
                 label="Negative Mark / Question"
                 name={["settings", "negative_marking", "per_question"]}
-                rules={[{ required: true }]}
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter the negative mark.",
+                  },
+                ]}
+                extra="Deducted for each incorrect answer."
               >
-                <InputNumber min={0} step={0.25} />
+                <InputNumber min={0} step={0.25} style={{ width: 140 }} />
               </Form.Item>
             )}
           </Space>
@@ -299,8 +314,6 @@ const EditExamModal = ({ open, onClose, examId, onUpdated }) => {
                 </Select>
               </Form.Item>
             </Col>
-            
-            
 
             <Col span={8}>
               <Form.Item
