@@ -39,6 +39,8 @@ const ExamView = () => {
 
   const [bannerFileList, setBannerFileList] = useState([]);
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const isMobileView =
+    typeof window !== "undefined" ? window.innerWidth < 576 : false;
 
   const fetchExam = useCallback(async () => {
     if (!id) return;
@@ -175,27 +177,97 @@ const ExamView = () => {
   })();
 
   return (
-    <div style={{ padding: 16 }}>
+    <div
+      className="exam-view-page"
+      style={{ padding: 16, overflowX: "hidden", maxWidth: "100%" }}
+    >
+      <style>{`
+        .exam-view-page {
+          max-width: 100%;
+          overflow-x: hidden;
+        }
+        .exam-view-page .exam-view-banner {
+          background-size: cover;
+          background-position: center;
+          height: 220px;
+        }
+        .exam-view-page .exam-view-description-content {
+          overflow-wrap: anywhere;
+          word-break: break-word;
+          overflow-x: hidden;
+        }
+        .exam-view-page .exam-view-description-content img,
+        .exam-view-page .exam-view-description-content iframe {
+          max-width: 100%;
+          height: auto;
+          display: block;
+        }
+        .exam-view-page .exam-view-description-content table {
+          display: block;
+          width: 100%;
+          overflow-x: auto;
+          border-collapse: collapse;
+        }
+        .exam-view-page .exam-view-description-content * {
+          max-width: 100%;
+          overflow-wrap: anywhere;
+          word-break: break-word;
+        }
+        .exam-view-page .exam-view-title {
+          margin-bottom: 4px;
+          overflow-wrap: anywhere;
+          word-break: break-word;
+        }
+        .exam-view-page .exam-view-header-button,
+        .exam-view-page .exam-view-upload-button {
+          width: 100%;
+        }
+        @media (min-width: 576px) {
+          .exam-view-page {
+            padding: 16px;
+          }
+          .exam-view-page .exam-view-banner {
+            height: 180px;
+          }
+          .exam-view-page .exam-view-header-button,
+          .exam-view-page .exam-view-upload-button {
+            width: auto;
+          }
+        }
+        @media (min-width: 768px) {
+          .exam-view-page .exam-view-banner {
+            height: 220px;
+          }
+        }
+        @media (max-width: 575px) {
+          .exam-view-page {
+            padding: 12px;
+          }
+          .exam-view-page .exam-view-banner {
+            height: 150px;
+          }
+        }
+      `}</style>
+
       {/* ================= BANNER ================= */}
       <Card
         style={{
           marginBottom: 24,
           padding: 0,
           overflow: "hidden",
+          maxWidth: "100%",
         }}
       >
         <div
+          className="exam-view-banner"
           style={{
-            height: 220,
             backgroundImage: currentBannerUrl
               ? `url(${currentBannerUrl})`
               : "linear-gradient(135deg, #003610ff, #69ff96ff)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
           }}
         />
 
-        <Space style={{ padding: "12px 0" }}>
+        <Space wrap style={{ padding: "12px 0", maxWidth: "100%" }}>
           {currentBannerUrl ? (
             <Popconfirm
               title="Are you sure?"
@@ -226,6 +298,7 @@ const ExamView = () => {
         okText="Save"
         confirmLoading={bannerSaving}
         destroyOnClose
+        width={isMobileView ? "95%" : 520}
       >
         <Upload
           accept="image/*"
@@ -234,7 +307,7 @@ const ExamView = () => {
           fileList={bannerFileList}
           onChange={({ fileList }) => setBannerFileList(fileList.slice(-1))}
         >
-          <Button>Select image</Button>
+          <Button className="exam-view-upload-button">Select image</Button>
         </Upload>
 
         {bannerFileList?.[0]?.originFileObj && (
@@ -255,11 +328,11 @@ const ExamView = () => {
       </Modal>
 
       {/* ================= HEADER ================= */}
-      <Card style={{ marginBottom: 24 }}>
-        <Row justify="space-between" align="middle">
-          <Col>
-            <h2 style={{ marginBottom: 4 }}>{exam.exam_title}</h2>
-            <Space>
+      <Card style={{ marginBottom: 24, maxWidth: "100%" }}>
+        <Row gutter={[16, 16]} justify="space-between" align="top">
+          <Col xs={24} sm={24} md={24} lg="auto">
+            <h2 className="exam-view-title">{exam.exam_title}</h2>
+            <Space wrap size="small" style={{ maxWidth: "100%" }}>
               <Tag color="blue" className="text_capitalized">
                 {exam.exam_status}
               </Tag>
@@ -273,22 +346,28 @@ const ExamView = () => {
             </Space>
           </Col>
 
-          <Col>
-            <Space>
-              <Button onClick={() => setEditOpen(true)}>
+          <Col xs={24} sm={24} md={24} lg="auto">
+            <Space wrap size="middle" className="exam-view-header-actions">
+              <Button
+                className="exam-view-header-button"
+                onClick={() => setEditOpen(true)}
+              >
                 <EditOutlined /> Edit Exam
               </Button>
               <Button
+                className="exam-view-header-button"
                 onClick={() => navigate(`/admin/exams/${id}/enrollments`)}
               >
                 <CheckCircleOutlined /> View Enrollment
               </Button>
-                <Button
-                  onClick={() => navigate(`/admin/exams/${id}/leaderboard`)}
-                >
-                  <LineChartOutlined /> View Leaderboard
-                </Button>
               <Button
+                className="exam-view-header-button"
+                onClick={() => navigate(`/admin/exams/${id}/leaderboard`)}
+              >
+                <LineChartOutlined /> View Leaderboard
+              </Button>
+              <Button
+                className="exam-view-header-button"
                 type="primary"
                 onClick={() => navigate(`/admin/exams/${id}/questions`)}
               >
@@ -300,8 +379,12 @@ const ExamView = () => {
       </Card>
 
       {/* ================= DESCRIPTION ================= */}
-      <Card title="Exam Description" style={{ marginBottom: 24 }}>
+      <Card
+        title="Exam Description"
+        style={{ marginBottom: 24, maxWidth: "100%" }}
+      >
         <div
+          className="exam-view-description-content"
           dangerouslySetInnerHTML={{
             __html: exam.exam_content?.exam_description || "",
           }}
@@ -309,47 +392,59 @@ const ExamView = () => {
       </Card>
 
       {/* ================= OVERVIEW ================= */}
-      <Card title="Exam Overview" style={{ marginBottom: 24 }}>
-        <Descriptions bordered column={2}>
-          <Descriptions.Item label="Registration Date & Time">
-            {formattedRegistrationDateTime}
-          </Descriptions.Item>
-          <Descriptions.Item label="Exam Date & Time">
-            {formattedExamDateTime}
-          </Descriptions.Item>
-          <Descriptions.Item label="Duration">
-            {exam.duration_minutes} minutes
-          </Descriptions.Item>
-          <Descriptions.Item label="Total Questions">
-            {exam.total_question}
-          </Descriptions.Item>
-          <Descriptions.Item label="Marks per Question">
-            {exam.mark_per_question}
-          </Descriptions.Item>
-          <Descriptions.Item label="Total Marks">
-            {totalMarks}
-          </Descriptions.Item>
-          <Descriptions.Item label="Pass Marks">
-            {exam.pass_marks}
-          </Descriptions.Item>
-          <Descriptions.Item label="Result Published">
-            {exam.result_status === "published" ? "Yes" : "No"}
-          </Descriptions.Item>
-        </Descriptions>
+      <Card
+        title="Exam Overview"
+        style={{ marginBottom: 24, maxWidth: "100%" }}
+      >
+        <div style={{ overflowX: "auto" }}>
+          <Descriptions bordered column={{ xs: 1, sm: 1, md: 2, lg: 2 }}>
+            <Descriptions.Item label="Registration Date & Time">
+              {formattedRegistrationDateTime}
+            </Descriptions.Item>
+            <Descriptions.Item label="Exam Date & Time">
+              {formattedExamDateTime}
+            </Descriptions.Item>
+            <Descriptions.Item label="Duration">
+              {exam.duration_minutes} minutes
+            </Descriptions.Item>
+            <Descriptions.Item label="Total Questions">
+              {exam.total_question}
+            </Descriptions.Item>
+            <Descriptions.Item label="Marks per Question">
+              {exam.mark_per_question}
+            </Descriptions.Item>
+            <Descriptions.Item label="Total Marks">
+              {totalMarks}
+            </Descriptions.Item>
+            <Descriptions.Item label="Pass Marks">
+              {exam.pass_marks}
+            </Descriptions.Item>
+            <Descriptions.Item label="Result Published">
+              {exam.result_status === "published" ? "Yes" : "No"}
+            </Descriptions.Item>
+          </Descriptions>
+        </div>
       </Card>
 
       {/* ================= SETTINGS ================= */}
-      <Card title="Exam Settings">
-        <Descriptions bordered column={1}>
-          <Descriptions.Item label="Shuffle Questions">
-            {exam.settings?.shuffle_questions ? "Yes" : "No"}
-          </Descriptions.Item>
-          <Descriptions.Item label="Negative Marking">
-            {exam.settings?.negative_marking?.enabled
-              ? `Yes (-${exam.settings.negative_marking.per_question})`
-              : "No"}
-          </Descriptions.Item>
-        </Descriptions>
+      <Card title="Exam Settings" style={{ maxWidth: "100%" }}>
+        <div style={{ overflowX: "auto" }}>
+          <Descriptions bordered column={{ xs: 1, sm: 1, md: 1, lg: 1 }}>
+            <Descriptions.Item label="Shuffle Questions">
+              {exam.settings?.shuffle_questions ? "Yes" : "No"}
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Security Control">
+              {exam.security_control ? "Enabled" : "Disabled"}
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Negative Marking">
+              {exam.settings?.negative_marking?.enabled
+                ? `Enabled (-${exam.settings.negative_marking.per_question} per wrong answer)`
+                : "Disabled"}
+            </Descriptions.Item>
+          </Descriptions>
+        </div>
       </Card>
 
       <EditExamModal
